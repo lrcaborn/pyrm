@@ -5,6 +5,7 @@ import random
 import uuid
 
 from midiutil import MIDIFile
+from enum import Enum
 
 # TODO
 # * change config to json?
@@ -34,7 +35,7 @@ from midiutil import MIDIFile
 # 100 = 1%
 
 class BaseConfig:
-	TICKS_PER_QUARTERNOTE = 960
+	TICKS_PER_QUARTERNOTE = 96 #960
 	name = "Base"
 	note_length_range = [1, TICKS_PER_QUARTERNOTE*4]
 	volume_range = [1, 127]
@@ -136,9 +137,18 @@ class KitCoreMtDillConfig(BaseConfig):
 	note_count_range = [500, 1000]
 
 class BullyDrumConfig(DrumConfig):
+	class Category(Enum):
+		KICK = "Kick"
+		SNARE = "Snare"
+		HATS = "Hats"
+		CYMBAL_CRASHES = "Cymbal Crashes"
+		TOMS = "Toms"
+		RIDE_CYMBAL = "Ride cymbal"
+		COWBELL = "Cowbell"
+
 	name = "BullyDrum"
-	pitch_range = [16, 65]
-	excluded_notes = [17,18,19,20,32,34,35,58,61]
+	excluded_notes = {17,18,19,20,32,34,35,58,61}
+	pitch_range = {16, 65} - excluded_notes
 
 	# defaults to being unpairable with own note
 	unpairable_notes = {
@@ -149,11 +159,10 @@ class BullyDrumConfig(DrumConfig):
 		24: [16,21,22,23,25,26,42,44,46,60,62,63,64,65],
 		25: [16,21,22,23,24,26,42,44,46,60,62,63,64,65],
 		26: [16,21,22,23,24,25,42,44,46,60,62,63,64,65],
-		36: [37,38,39,40],
-		37: [36,38,39,40],
-		38: [36,37,39,40],
-		39: [36,37,38,40],
-		40: [36,37,38,39],
+		37: [38,39,40],
+		38: [37,39,40],
+		39: [37,38,40],
+		40: [37,38,39],
 		42: [16,21,22,23,24,25,26,44,46,60,62,63,64,65],
 		44: [16,21,22,23,24,25,26,42,46,60,62,63,64,65],
 		45: [37],
@@ -187,15 +196,24 @@ class BullyDrumConfig(DrumConfig):
 # 100 = 1%
 
 	note_categories = {
-		"Hats": { 6: [16,21,22,23,24,25,26,42,44,46,60,62,63,64,65] },
-		"Cymbal Crashes": {6: [27,28,29,30,31,32,49,52,55,57,59]},
-		"Kick": {5: [36]},
-		"Snare": {5: [37,38,39,40]},
-		"Toms": {6: [41,43,45,47,48,50]},
-		"Ride cymbal": {10: [51,53] },
-		"Cowbell": {20: [54,56] }
+		Category.HATS: [16,21,22,23,24,25,26,42,44,46,60,62,63,64,65],
+		Category.CYMBAL_CRASHES: [27,28,29,30,31,32,49,52,55,57,59],
+		Category.KICK: [36],
+		Category.SNARE: [37,38,39,40],
+		Category.TOMS: [41,43,45,47,48,50],
+		Category.RIDE_CYMBAL: [51,53],
+		Category.COWBELL: [54,56]
 	}
 
+	chooser = lea.pmf({
+		Category.KICK: 0.20,
+		Category.SNARE: 0.20,
+		Category.HATS: 0.15,
+		Category.CYMBAL_CRASHES: 0.15,
+		Category.TOMS: 0.15,
+		Category.RIDE_CYMBAL: 0.10,
+		Category.COWBELL: 0.05
+	})
 
 
 
@@ -270,7 +288,10 @@ class Application:
 
 	@staticmethod
 	def __getRandomFromRange(range):
-		return random.randint(range[0], range[1])
+		if len(range) == 1:
+			return range[0]
+		else:
+			return random.randint(range[0], range[1])
 
 	@classmethod
 	def __generateRandomizedTuning(self):
@@ -296,10 +317,14 @@ class Application:
 			self.midi.changeNoteTuning(0, new_tuning, tuningProgam=0)
 
 	@classmethod
-	def __generatePitch(self):
-		pitch = self.__getRandomFromRange(self.config.pitch_range)
-		while pitch in config.excluded_notes:
-			pitch = self.__getRandomFromRange(self.config.pitch_range)
+	def __generatePitch(self, config):
+		try:
+			category = config.chooser.random()
+			range = self.config.note_categories[category]
+		except AttributeError:
+			range = self.config.pitch_range
+
+		pitch = self.__getRandomFromRange(range)
 		return pitch
 
 	@classmethod
@@ -316,7 +341,7 @@ class Application:
 		for i in enumerate(degrees):
 			volume = self.__getRandomFromRange(self.config.volume_range)
 			note_length = self.__getRandomFromRange(self.config.note_length_range)
-			pitch = self.__generatePitch()
+			pitch = self.__generatePitch(config)
 			tempo_change_chance = self.__getRandomFromRange(self.config.tempo_change_chance_range)
 
 			if tempo_change_chance % self.config.tempo_change_chance == 0:
@@ -328,7 +353,7 @@ class Application:
 			for j in range(self.config.maximum_simultaneous_notes):
 				simultaneous_note_chance = self.__getRandomFromRange(self.config.simultaneous_notes_chance_range)
 				if simultaneous_note_chance % self.config.simultaneous_notes_chance == 0:
-					pitch = self.__generatePitch()
+					pitch = self.__generatePitch(config)
 					if pitch == original_pitch or (original_pitch in self.config.unpairable_notes and pitch in self.config.unpairable_notes[original_pitch]):
 						break
 					else:
@@ -348,40 +373,50 @@ class Application:
 			self.midi.writeFile(output_file)
 
 # Let's run this thing!
-for i in range(5):
-	config = PadConfigLow()
+#for i in range(10):
+#	config = BullyDrumSlowConfig()
+#	app = Application(config)
+#	app.buildTrack()
+#	app.writeFile(str(i))
+
+
+
+#for i in range(5):
+#	config = PadConfigLow()
+	#app = Application(config)
+	#app.buildTrack()
+	#app.writeFile(str(i))
+
+	
+	
+for i in range(10):
+	config = BullyDrumFastConfig()
 	app = Application(config)
 	app.buildTrack()
 	app.writeFile(str(i))
 
-#for i in range(10):
-	#config = BullyDrumFastConfig()
-#	app = Application(config)
-	#app.buildTrack()
-	#app.writeFile(str(i))
-#
-#	config = BassFastConfig()
-#	app = Application(config)
-#	app.buildTrack()
-#	app.writeFile(str(i))
-#
-#	config = OrnamentConfig()
-#	app = Application(config)
-#	app.buildTrack()
-#	app.writeFile(str(i))
-#
-#for i in range(9):
-	#config = BullyDrumSlowConfig()
-	#app = Application(config)
-	#app.buildTrack()
-	#app.writeFile(str(i))
-#
-#	config = BassSlowConfig()
-#	app = Application(config)
-#	app.buildTrack()
-#	app.writeFile(str(i))
-#
-#	config = PadConfig()
-#	app = Application(config)
-#	app.buildTrack()
-#	app.writeFile(str(i))
+	config = BassFastConfig()
+	app = Application(config)
+	app.buildTrack()
+	app.writeFile(str(i))
+
+	config = OrnamentConfig()
+	app = Application(config)
+	app.buildTrack()
+	app.writeFile(str(i))
+
+for i in range(9):
+	config = BullyDrumSlowConfig()
+	app = Application(config)
+	app.buildTrack()
+	app.writeFile(str(i))
+
+	config = BassSlowConfig()
+	app = Application(config)
+	app.buildTrack()
+	app.writeFile(str(i))
+
+	config = PadConfig()
+	app = Application(config)
+	app.buildTrack()
+	app.writeFile(str(i))
