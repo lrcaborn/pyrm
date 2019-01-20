@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+import logging
 import random
 import uuid
 
@@ -14,11 +15,14 @@ class PyRM:
 	
 	@classmethod
 	def __loadConfig(self, config):
-		print("using " + config.name + " configuration")
 		self.config = config
+		config_info = "using " + config.name + " configuration"
+		print(config_info)
+		logging.debug(config_info)
 
 	@classmethod
 	def __init__(self, config):
+		logging.basicConfig(filename='debug.log',level=logging.DEBUG)
 		self.__loadConfig(config)
 		self.midi = MIDIFile(1, deinterleave = False, eventtime_is_ticks = True, ticks_per_quarternote = config.TICKS_PER_QUARTERNOTE)
 
@@ -90,7 +94,10 @@ class PyRM:
 		note_count = self.__getRandomFromRange(self.config.note_count_range)
 		degrees = range(0, note_count, 1)
 
+		logging.debug("start generating track")
+		
 		tempo = self.__getRandomFromRange(self.config.tempo_range)
+		logging.debug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
 		self.midi.addTempo(track, note_start_time, tempo)
 
 		for i in enumerate(degrees):
@@ -101,8 +108,11 @@ class PyRM:
 
 			if tempo_change_chance % self.config.tempo_change_chance == 0:
 				tempo = self.__getRandomFromRange(self.config.tempo_range)
+				self.midi.addTempo(track, note_start_time, tempo)
+				logging.debug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
 			
 			self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
+			logging.debug("NOTE: " + str(track) + " " + str(channel) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
 			
 			original_pitch = pitch
 			for j in range(self.config.maximum_simultaneous_notes):
@@ -113,9 +123,11 @@ class PyRM:
 						break
 					else:
 						self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
+						logging.debug("NOTE: " + str(track) + " " + str(channel) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
 
-			# determine next note_start_time so that we always start the track with the first note @ 0
-			note_start_time = note_start_time + self.__getRandomFromRange(self.config.note_length_range)
+			# determine next note_start_time after adding the first note
+			# so that we always start the track with the first note @ 0
+			note_start_time = note_start_time + int(self.__getRandomFromRange(self.config.note_length_range) / 2)
 			
 	@classmethod
 	def writeFile(self, customIdentifier):

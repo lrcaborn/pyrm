@@ -3,7 +3,7 @@
 from PyRM import PyRM, Config
 
 # Let's run this thing!
-for i in range(10):
+for i in range(1):
 	config = Config.ConfigDrumBullySlow()
 	pyrm = PyRM.PyRM(config)
 	pyrm.buildTrack()

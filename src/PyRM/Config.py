@@ -42,6 +42,7 @@ class ConfigBase:
 	simultaneous_notes_chance = 4
 	excluded_notes = []
 	unpairable_notes = {}
+	debug_log = True
 
 	
 	
@@ -131,6 +132,7 @@ class ConfigDrumBully(ConfigDrum):
 		COWBELL = "Cowbell"
 
 	volume_range = [90, 127]
+	simultaneous_notes_chance = 2
 
 	name = "BullyDrum"
 	excluded_notes = {17,18,19,20,32,34,35,58,61}
@@ -192,19 +194,19 @@ class ConfigDrumBully(ConfigDrum):
 	}
 
 	chooser = lea.pmf({
-		Category.KICK: 0.20,
-		Category.SNARE: 0.20,
+		Category.KICK: 0.25,
+		Category.SNARE: 0.25,
 		Category.HATS: 0.15,
-		Category.CYMBAL_CRASHES: 0.15,
-		Category.TOMS: 0.15,
+		Category.CYMBAL_CRASHES: 0.10,
+		Category.TOMS: 0.10,
 		Category.RIDE_CYMBAL: 0.10,
 		Category.COWBELL: 0.05
 	})
 
 class ConfigDrumBullySlow(ConfigDrumBully):
 	name = "BullyDrumSlow"
-	note_length_range = [1, ConfigBase.TICKS_PER_QUARTERNOTE]
-	tempo_range = [60, 90]
+	note_length_range = [ConfigBase.TICKS_PER_QUARTERNOTE/4, ConfigBase.TICKS_PER_QUARTERNOTE*2]
+	tempo_range = [40, 70]
 	note_count_range = [2500,3000]
 
 class ConfigDrumBullyFast(ConfigDrumBully):
