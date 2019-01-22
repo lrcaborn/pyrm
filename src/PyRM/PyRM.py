@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+import lea
 import logging
 import random
 import uuid
@@ -12,13 +13,14 @@ from midiutil import MIDIFile
 class PyRM:
 	config = None
 	midi = None
+	categories = None
 	
 	@classmethod
 	def __loadConfig(self, config):
 		self.config = config
 		config_info = "using " + config.name + " configuration"
 		print(config_info)
-		logging.debug(config_info)
+		self.__logDebug(config_info)
 
 	@classmethod
 	def __init__(self, config):
@@ -46,11 +48,13 @@ class PyRM:
 			return second
 
 	@staticmethod
-	def __getRandomFromRange(range):
-		if len(range) == 1:
-			return range[0]
+	def __getRandom(list):
+		if (len(list) == 1):
+			return random.randrange(list[0])
+		if (len(list) == 2):
+			return random.randrange(list[0], list[1])
 		else:
-			return random.randint(range[0], range[1])
+			raise TypeError('' )
 
 	@classmethod
 	def __generateRandomizedTuning(self):
@@ -71,7 +75,7 @@ class PyRM:
 				new_tuning.append(tuning)
 
 			for count, value in enumerate(base_tuning):
-				print(value, " ", new_tuning[count])
+				self.__logDebug(value, " ", new_tuning[count])
 
 			self.midi.changeNoteTuning(0, new_tuning, tuningProgam=0)
 
@@ -80,10 +84,11 @@ class PyRM:
 		try:
 			category = self.config.chooser.random()
 			range = self.config.note_categories[category]
+			self.__logDebug("category: " + str(category) + " range: " + str(range))
 		except AttributeError:
-			range = self.config.pitch_range
+			range = self.config.allowed_notes
 
-		pitch = self.__getRandomFromRange(range)
+		pitch = self.__getRandom(range)
 		return pitch
 
 	@classmethod
@@ -91,44 +96,68 @@ class PyRM:
 		channel = 0
 		track = 0
 		note_start_time = 0
-		note_count = self.__getRandomFromRange(self.config.note_count_range)
-		degrees = range(0, note_count, 1)
-
-		logging.debug("start generating track")
+		note_count = self.__getRandom(self.config.note_count_scope)
+		# generates tuple of categories that will match up reasonably well with 
+		# the probabilities specified when defining the chooser in the config
+		self.categories = self.config.chooser.random(note_count)
 		
-		tempo = self.__getRandomFromRange(self.config.tempo_range)
-		logging.debug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
+		self.__logDebug("start generating track")
+		
+		tempo = self.__getRandom(self.config.tempo_scope)
 		self.midi.addTempo(track, note_start_time, tempo)
+		self.__logDebug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
 
-		for i in enumerate(degrees):
-			volume = self.__getRandomFromRange(self.config.volume_range)
-			note_length = self.__getRandomFromRange(self.config.note_length_range)
-			pitch = self.__generatePitch()
-			tempo_change_chance = self.__getRandomFromRange(self.config.tempo_change_chance_range)
+		self.__logDebug("category	pitch	note_start_time	note_length	volume")
+		for i,category in enumerate(self.categories):
+			volume = self.__getRandom(self.config.volume_scope)
+			note_length = self.__getRandom(self.config.note_length_scope)
+			pitch = self.config.note_categories[category][self.__getRandom([len(self.config.note_categories[category])])]
+			#self.__logDebug("pitch " + str(pitch) + " selected from range " + str(self.config.note_categories[category]))
 
+# TEMPO CHANGE
+			tempo_change_chance = self.__getRandom(self.config.tempo_change_chance_range)
 			if tempo_change_chance % self.config.tempo_change_chance == 0:
-				tempo = self.__getRandomFromRange(self.config.tempo_range)
+				tempo = self.__getRandom(self.config.tempo_scope)
 				self.midi.addTempo(track, note_start_time, tempo)
 				logging.debug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
 			
 			self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
-			logging.debug("NOTE: " + str(track) + " " + str(channel) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
+			self.__logDebug("NOTE: " + str(category) + "	" + str(pitch) + "	" + str(note_start_time) + "	" + str(note_length) + "	" + str(volume))
 			
-			original_pitch = pitch
+# SIMULTANEOUS NOTES
+			simultaneous_pitches = [pitch]
 			for j in range(self.config.maximum_simultaneous_notes):
-				simultaneous_note_chance = self.__getRandomFromRange(self.config.simultaneous_notes_chance_range)
+
+				simultaneous_note_chance = self.__getRandom(self.config.simultaneous_note_chance_scope)
 				if simultaneous_note_chance % self.config.simultaneous_notes_chance == 0:
-					pitch = self.__generatePitch()
-					if pitch == original_pitch or (original_pitch in self.config.unpairable_notes and pitch in self.config.unpairable_notes[original_pitch]):
-						break
-					else:
-						self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
-						logging.debug("NOTE: " + str(track) + " " + str(channel) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
+
+					found_valid_pitch = False
+					while found_valid_pitch == False:
+						# getting a pitch for a simultaneous note doesn't need to be limited by the category
+						pitch = self.config.allowed_notes[self.__getRandom([len(self.config.allowed_notes)])]
+
+						if pitch in simultaneous_pitches: 
+							# we don't want to add notes already used to the list of simultaneous pitches
+							self.__logDebug("SIM NOTE failure: " + str(pitch) + " already used: " + str(simultaneous_pitches))
+						elif (simultaneous_pitches[0] in self.config.unpairable_notes and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
+							# we don't want to add notes that are unpairable with the first note
+							self.__logDebug("SIM NOTE failure: simultaneous_pitches[0] " + str(simultaneous_pitches[0]) + " unpairable with " + str(pitch))
+						else:
+							found_valid_pitch = True
+							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
+							self.__logDebug("SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
+				else:
+					break
 
 			# determine next note_start_time after adding the first note
 			# so that we always start the track with the first note @ 0
-			note_start_time = note_start_time + int(self.__getRandomFromRange(self.config.note_length_range) / 2)
-			
+			note_start_time = note_start_time + int(self.__getRandom(self.config.note_length_scope) / 2)
+	
+	@staticmethod
+	def __logDebug(message):
+		logging.debug(message)
+		print(message)
+	
 	@classmethod
 	def writeFile(self, customIdentifier):
 		id = customIdentifier
@@ -138,3 +167,9 @@ class PyRM:
 			
 		with open(filename, "wb") as output_file:
 			self.midi.writeFile(output_file)
+			
+	@classmethod
+	def writeStats(self):
+		self.__logDebug(self.config.getStats())
+		self.__logDebug(lea.vals(*self.categories))
+
