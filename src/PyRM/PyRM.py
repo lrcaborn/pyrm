@@ -48,13 +48,17 @@ class PyRM:
 			return second
 
 	@staticmethod
-	def __getRandom(list):
-		if (len(list) == 1):
-			return random.randrange(list[0])
-		if (len(list) == 2):
-			return random.randrange(list[0], list[1])
+	def __getRandom(*args):
+		if (len(args) == 1):
+			if (isinstance(args[0], int)):
+				return random.randrange(args[0])
+			elif (isinstance(args[0], list)) and (len(args[0]) == 2):
+				if (args[0][0] == args[0][1]):
+					return args[0][0];
+				else:
+					return random.randrange(args[0][0], args[0][1])
 		else:
-			raise TypeError('' )
+			print(str(args))
 
 	@classmethod
 	def __generateRandomizedTuning(self):
@@ -96,9 +100,10 @@ class PyRM:
 		channel = 0
 		track = 0
 		note_start_time = 0
-		note_count = self.__getRandom(self.config.note_count_scope)
+
 		# generates tuple of categories that will match up reasonably well with 
 		# the probabilities specified when defining the chooser in the config
+		note_count = self.__getRandom(self.config.note_count_scope)
 		self.categories = self.config.chooser.random(note_count)
 		
 		self.__logDebug("start generating track")
@@ -111,7 +116,7 @@ class PyRM:
 		for i,category in enumerate(self.categories):
 			volume = self.__getRandom(self.config.volume_scope)
 			note_length = self.__getRandom(self.config.note_length_scope)
-			pitch = self.config.note_categories[category][self.__getRandom([len(self.config.note_categories[category])])]
+			pitch = self.config.note_categories[category.value][self.__getRandom(len(self.config.note_categories[category.value]))]
 			#self.__logDebug("pitch " + str(pitch) + " selected from range " + str(self.config.note_categories[category]))
 
 # TEMPO CHANGE
@@ -134,14 +139,20 @@ class PyRM:
 					found_valid_pitch = False
 					while found_valid_pitch == False:
 						# getting a pitch for a simultaneous note doesn't need to be limited by the category
-						pitch = self.config.allowed_notes[self.__getRandom([len(self.config.allowed_notes)])]
+						pitch = self.config.allowed_notes[self.__getRandom(len(self.config.allowed_notes))]
 
 						if pitch in simultaneous_pitches: 
 							# we don't want to add notes already used to the list of simultaneous pitches
 							self.__logDebug("SIM NOTE failure: " + str(pitch) + " already used: " + str(simultaneous_pitches))
+							break
+						elif (pitch in self.config.note_categories[category.value]):
+							# we don't want to add notes that are unpairable with the first note
+							self.__logDebug("SIM NOTE failure: pitch " + str(pitch) + " in the current category " + str(self.config.note_categories[category.value]))
+							break
 						elif (simultaneous_pitches[0] in self.config.unpairable_notes and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
 							# we don't want to add notes that are unpairable with the first note
 							self.__logDebug("SIM NOTE failure: simultaneous_pitches[0] " + str(simultaneous_pitches[0]) + " unpairable with " + str(pitch))
+							break
 						else:
 							found_valid_pitch = True
 							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
