@@ -15,13 +15,9 @@ class PyRM:
 	midi = None
 	categories = None
 	
-	@classmethod
-	def __loadConfig(self, config):
-		self.config = config
-		config_info = "using " + config.name + " configuration"
-		print(config_info)
-		self.__logDebug(config_info)
-
+#################
+# CLASS METHODS #
+#################
 	@classmethod
 	def __init__(self, config):
 		logging.basicConfig(filename='debug.log',level=logging.DEBUG)
@@ -29,36 +25,27 @@ class PyRM:
 		self.midi = MIDIFile(1, deinterleave = False, eventtime_is_ticks = True, ticks_per_quarternote = config.TICKS_PER_QUARTERNOTE)
 
 	@classmethod
+	def __loadConfig(self, config):
+		self.config = config
+		config_info = "using " + config.name + " configuration"
+		self.__logDebug(config_info)
+
+	@classmethod
 	def __frequency(self, midi_note):
 		"""Calculate frequency of given midi note"""
 		return 27.5 * 2 ** ((midi_note - 21)/12)
 
-	@staticmethod
-	def __greaterOf(first, second):
-		if first > second:
-			return first
-		else:
-			return second
+	@classmethod
+	def __generatePitch(self):
+		try:
+			category = self.config.chooser.random()
+			range = self.config.note_categories[category]
+			self.__logDebug("category: " + str(category) + " range: " + str(range))
+		except AttributeError:
+			range = self.config.allowed_notes
 
-	@staticmethod
-	def __lesserOf(first, second):
-		if first < second:
-			return first
-		else:
-			return second
-
-	@staticmethod
-	def __getRandom(*args):
-		if (len(args) == 1):
-			if (isinstance(args[0], int)):
-				return random.randrange(args[0])
-			elif (isinstance(args[0], list)) and (len(args[0]) == 2):
-				if (args[0][0] == args[0][1]):
-					return args[0][0];
-				else:
-					return random.randrange(args[0][0], args[0][1])
-		else:
-			print(str(args))
+		pitch = self.__getRandom(range)
+		return pitch
 
 	@classmethod
 	def __generateRandomizedTuning(self):
@@ -84,26 +71,14 @@ class PyRM:
 			self.midi.changeNoteTuning(0, new_tuning, tuningProgam=0)
 
 	@classmethod
-	def __generatePitch(self):
-		try:
-			category = self.config.chooser.random()
-			range = self.config.note_categories[category]
-			self.__logDebug("category: " + str(category) + " range: " + str(range))
-		except AttributeError:
-			range = self.config.allowed_notes
-
-		pitch = self.__getRandom(range)
-		return pitch
-
-	@classmethod
 	def buildTrack(self):
 		channel = 0
 		track = 0
 		note_start_time = 0
 
+		note_count = self.__getRandom(self.config.note_count_scope)
 		# generates tuple of categories that will match up reasonably well with 
 		# the probabilities specified when defining the chooser in the config
-		note_count = self.__getRandom(self.config.note_count_scope)
 		self.categories = self.config.chooser.random(note_count)
 		
 		self.__logDebug("start generating track")
@@ -116,20 +91,27 @@ class PyRM:
 		for i,category in enumerate(self.categories):
 			volume = self.__getRandom(self.config.volume_scope)
 			note_length = self.__getRandom(self.config.note_length_scope)
-			pitch = self.config.note_categories[category.value][self.__getRandom(len(self.config.note_categories[category.value]))]
+			
+			self.__logDebug("category: " + category)
+			
+			pitch = self.config.note_categories[category][self.__getRandom(len(self.config.note_categories[category]))]
 			#self.__logDebug("pitch " + str(pitch) + " selected from range " + str(self.config.note_categories[category]))
 
-# TEMPO CHANGE
+			################
+			# TEMPO CHANGE #
+			################
 			tempo_change_chance = self.__getRandom(self.config.tempo_change_chance_range)
 			if tempo_change_chance % self.config.tempo_change_chance == 0:
 				tempo = self.__getRandom(self.config.tempo_scope)
 				self.midi.addTempo(track, note_start_time, tempo)
-				logging.debug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
+				self.__logDebug("TEMPO: " + str(track) + " " + str(note_start_time) + " " + str(tempo))
 			
 			self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
 			self.__logDebug("NOTE: " + str(category) + "	" + str(pitch) + "	" + str(note_start_time) + "	" + str(note_length) + "	" + str(volume))
 			
-# SIMULTANEOUS NOTES
+			######################
+			# SIMULTANEOUS NOTES #
+			######################
 			simultaneous_pitches = [pitch]
 			for j in range(self.config.maximum_simultaneous_notes):
 
@@ -145,9 +127,9 @@ class PyRM:
 							# we don't want to add notes already used to the list of simultaneous pitches
 							self.__logDebug("SIM NOTE failure: " + str(pitch) + " already used: " + str(simultaneous_pitches))
 							break
-						elif (pitch in self.config.note_categories[category.value]):
+						elif (pitch in self.config.note_categories[category]):
 							# we don't want to add notes that are unpairable with the first note
-							self.__logDebug("SIM NOTE failure: pitch " + str(pitch) + " in the current category " + str(self.config.note_categories[category.value]))
+							self.__logDebug("SIM NOTE failure: pitch " + str(pitch) + " is in the current category " + str(self.config.note_categories[category]))
 							break
 						elif (simultaneous_pitches[0] in self.config.unpairable_notes and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
 							# we don't want to add notes that are unpairable with the first note
@@ -163,12 +145,7 @@ class PyRM:
 			# determine next note_start_time after adding the first note
 			# so that we always start the track with the first note @ 0
 			note_start_time = note_start_time + int(self.__getRandom(self.config.note_length_scope) / 2)
-	
-	@staticmethod
-	def __logDebug(message):
-		logging.debug(message)
-		print(message)
-	
+
 	@classmethod
 	def writeFile(self, customIdentifier):
 		id = customIdentifier
@@ -184,3 +161,39 @@ class PyRM:
 		self.__logDebug(self.config.getStats())
 		self.__logDebug(lea.vals(*self.categories))
 
+
+##################
+# STATIC METHODS #
+##################
+
+	@staticmethod
+	def __getRandom(*args):
+		if (len(args) == 1):
+			if (isinstance(args[0], int)):
+				return random.randrange(args[0])
+			elif (isinstance(args[0], list)) and (len(args[0]) == 2):
+				if (args[0][0] == args[0][1]):
+					return args[0][0];
+				else:
+					return random.randrange(args[0][0], args[0][1])
+		else:
+			self.__logDebug(str(args))
+
+	@staticmethod
+	def __greaterOf(first, second):
+		if first > second:
+			return first
+		else:
+			return second
+
+	@staticmethod
+	def __lesserOf(first, second):
+		if first < second:
+			return first
+		else:
+			return second
+
+	@staticmethod
+	def __logDebug(message):
+		#logging.debug(message)
+		print(message)
