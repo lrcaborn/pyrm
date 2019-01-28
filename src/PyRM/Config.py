@@ -31,7 +31,7 @@ class ConfigBase:
 	name = "Base"
 	note_length_scope = [1, TICKS_PER_QUARTERNOTE*4]
 	volume_scope = [1, 127]
-	allowed_notes = [21, 108] # A0 to C8
+	note_scope = [21, 108] # A0 to C8
 	tempo_scope = [30, 200]
 	note_count_scope = [100, 1000]
 	use_randomized_tuning = False
@@ -59,7 +59,7 @@ class ConfigBassSlow(ConfigBass):
 	name = "Bass Slow"
 	note_length_scope = [1, ConfigBass.TICKS_PER_QUARTERNOTE*2]
 	volume_scope = [90, 100]
-	allowed_notes = [26, 60]
+	note_scope = [26, 60]
 	tempo_scope = [60, 90]
 	note_count_scope = [100, 200]
 	maximum_simultaneous_notes = 3
@@ -68,7 +68,7 @@ class ConfigBassFast(ConfigBass):
 	name = "Bass Fast"
 	note_length_scope = [1, ConfigBass.TICKS_PER_QUARTERNOTE]
 	volume_scope = [90, 110]
-	allowed_notes = [26, 48]
+	note_scope = [26, 48]
 	tempo_scope = [150, 180]
 	note_count_scope = [100, 200]
 	maximum_simultaneous_notes = 2
@@ -139,7 +139,7 @@ class ConfigDrumBully(ConfigDrum):
 
 		def __str__(self):
 			return self.name
-		
+			
 	volume_scope = [90, 127]
 
 	maximum_simultaneous_notes = 3
@@ -147,7 +147,7 @@ class ConfigDrumBully(ConfigDrum):
 
 	name = "BullyDrum"
 	forbidden_notes = {17,18,19,20,33,34,35,58,61}
-	allowed_notes = list(set(range(16, 65)) - forbidden_notes)
+	note_scope = list(set(range(16, 65)) - forbidden_notes)
 	
 	note_categories = {
 		Category.HAT.value: [16,21,22,23,24,25,26,42,44,46,60,62,63,64,65],
@@ -180,33 +180,48 @@ class ConfigDrumEzxJazz(ConfigDrum):
 		SNARE = "Snare"
 		CRASH = "Cymbal Crashes"
 		TOM = "Toms"
+		
+		def __str__(self):
+			return self.name
 
-	forbidden_notes = {76}
-	allowed_notes = list(set(range(1, 128)) - forbidden_notes)
+	# 67 is empty for nonbrush kit
+	forbidden_notes = {1,2,3,56,76}
+	note_scope = list(set(range(0, 128)) - forbidden_notes)
+		
+	simultaneous_notes_chance = 2
 		
 	note_categories = {
-		Category.HAT: [7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,42,44,46,56,60,61,62,63,64,65,119,120,121,122,123,124],
-		Category.KICK: [34,35,36],
-		Category.RIDE: [30,31,32,51,52,53,57,58,59,84,85,86,87,88,89,90,91,92,93,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118],
-		Category.SNARE: [6,33,37,38,39,40,66,67,68,69,70,71,125,126,127],
-		Category.CRASH: [27,28,29,49,54,55,83,94,95],
-		Category.TOM: [1,2,3,4,5,41,43,45,47,48,50,72,73,74,75,77,78,79,80,81,82]
+		Category.HAT.value: [7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,42,44,46,60,61,62,63,64,65,119,120,121,122,123,124],
+		Category.KICK.value: [34,35,36],
+		Category.RIDE.value: [51,52,53,57,58,59,84,85,86,87,88,89,90,91,92,93,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118],
+		Category.SNARE.value: [6,33,37,38,39,40,66,67,68,69,70,71,125,126,127],
+		Category.CRASH.value: [27,28,29,30,31,32,49,54,55,83,94,95],
+		Category.TOM.value: [4,5,41,43,45,47,48,50,72,73,74,75,77,78,79,80,81,82]
 	}
 
+	unpairable_notes = {
+
+		30: [51,52,53,57,58,59,84,85,86,87,88,89,90,91,92,93,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118],
+		31: [51,52,53,57,58,59,84,85,86,87,88,89,90,91,92,93,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118],
+		32: [51,52,53,57,58,59,84,85,86,87,88,89,90,91,92,93,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118]
+		
+		# need to go the other way too: convert array to column and add 30, 31, 32 as array for each
+	}
+	
 	ConfigDrum.chooser = lea.pmf({
-		Category.CRASH: 0,
-		Category.HAT: 0.15,
-		Category.KICK: 0.30,
-		Category.RIDE: 0.15,
-		Category.SNARE: 0.20,
-		Category.TOM: 0.15
+		Category.CRASH.value: 0,
+		Category.HAT.value: 0.15,
+		Category.KICK.value: 0.25,
+		Category.RIDE.value: 0.15,
+		Category.SNARE.value: 0.25,
+		Category.TOM.value: 0.15
 	})	
 
 class ConfigDrumEzxJazzSlow(ConfigDrumEzxJazz):
 	name = "EzxJazzSlow"
-	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE/8, ConfigBase.TICKS_PER_QUARTERNOTE]
+	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE, ConfigBase.TICKS_PER_QUARTERNOTE*2]
 	tempo_scope = [40, 70]
-	note_count_scope = [1000,1500]
+	note_count_scope = [400,500]
 	
 class ConfigDrumBullySlow(ConfigDrumBully):
 	name = "BullyDrumSlow"
@@ -216,7 +231,7 @@ class ConfigDrumBullySlow(ConfigDrumBully):
 
 class ConfigDrumBullyFast(ConfigDrumBully):
 	name = "BullyDrumFast"
-	note_length_scope = [1, ConfigBase.TICKS_PER_QUARTERNOTE/2]
+	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE/2, ConfigBase.TICKS_PER_QUARTERNOTE]
 	tempo_scope = [150, 180]
 	note_count_scope = [1000,1500]
 
@@ -226,7 +241,7 @@ class ConfigDrumBullyFast(ConfigDrumBully):
 	
 class ConfigDrumKitCoreMtDill(ConfigDrum):
 	name = "Kit-Core Mt Dill"
-	allowed_notes = [24, 39]
+	note_scope = [24, 39]
 	maximum_simultaneous_notes = 4
 	note_length_scope = [1, ConfigBase.TICKS_PER_QUARTERNOTE/2]
 	tempo_scope = [150, 180]
@@ -239,52 +254,45 @@ class ConfigDrumKitCoreMtDill(ConfigDrum):
 	
 class ConfigOrnament(ConfigBase):
 	name = "Ornament"
-	note_length_scope = [1, ConfigBase.TICKS_PER_QUARTERNOTE]
-	volume_scope = [30, 100]
-	allowed_notes = [21, 108] # A0 to C8
-	tempo_scope = [30, 999]
+	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE/4, ConfigBase.TICKS_PER_QUARTERNOTE]
+	volume_scope = [90, 110]
+	note_scope = [0, 127] # A0 to C8
+	tempo_scope = [30, 300]
 	note_count_scope = [100, 1000]
 	maximum_simultaneous_notes = 4
 
 	
 	
-	
-	
+
+
 class ConfigPad(ConfigBase):
 	name = "Pad"
-	note_length_scope = [1, ConfigBase.TICKS_PER_QUARTERNOTE*8]
+	simultaneous_notes_chance = 2
+	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE, ConfigBase.TICKS_PER_QUARTERNOTE*2]
 	volume_scope = [80, 100]
-	allowed_notes = [21, 108] # A0 to C8
-	tempo_scope = [60, 80]
-	note_count_scope = [500, 750]
-	maximum_simultaneous_notes = 5
-
+	note_scope = [0, 127]
+	tempo_scope = [40, 70]
+	note_count_scope = [100,1500]
+	maximum_simultaneous_notes = 8
+	
 	class Category(Enum):
 		LOW = "Low"
 		MIDDLE = "Middle"
 		HIGH = "High"
-
-class ConfigPadLow(ConfigPad):
-	name = "Pad Low"
-	note_length_scope = [1, ConfigPad.TICKS_PER_QUARTERNOTE*8]
-	volume_scope = [80, 100]
-	allowed_notes = [21, 45] # A0 to C8
-	tempo_scope = [40, 70]
-	note_count_scope = [1000,1500]
-	maximum_simultaneous_notes = 3
-	
-	Category = ConfigPad.Category
+		
+		def __str__(self):
+			return self.name
 	
 	note_categories = {
-		Category.LOW: list(range(0, 43)),
-		Category.MIDDLE: list(range(43 , 86)),
-		Category.HIGH: list(range(85, 128))
+		Category.LOW.value: list(range(0, 43)),
+		Category.MIDDLE.value: list(range(43 , 86)),
+		Category.HIGH.value: list(range(85, 128))
 	}
 
-	ConfigPad.chooser = lea.pmf({
-		Category.LOW: 0.1,
-		Category.MIDDLE: 0.8,
-		Category.HIGH: 0.1,
+	ConfigBase.chooser = lea.pmf({
+		Category.LOW.value: 0.1,
+		Category.MIDDLE.value: 0.8,
+		Category.HIGH.value: 0.1,
 	})
 
 	
