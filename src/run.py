@@ -18,25 +18,23 @@ from PyRM import PyRM, Config
 #	pyrm.writeStats()
 #	pyrm.writeFile(str(i))
 
-#for i in range(5):
-#	config = Config.ConfigDrumEzxJazzSlow()
-#	print (config.note_scope)
-#	pyrm = PyRM.PyRM(config)
-#	pyrm.buildTrack()
-#	pyrm.writeFile(str(i))
-#	pyrm.writeStats()
-#	pyrm.writeLog()
-
-	
-	
 for i in range(5):
-	config = Config.ConfigPad()
+	config = Config.ConfigDrumEzxJazzSlow()
 	pyrm = PyRM.PyRM(config)
 	pyrm.buildTrack()
 	pyrm.writeFile(str(i))
 	pyrm.writeStats()
 	pyrm.writeLog()
 
+	
+
+#for i in range(1):
+#	config = Config.ConfigPad()
+#	pyrm = PyRM.PyRM(config)
+#	pyrm.buildTrack()
+#	pyrm.writeFile(str(i))
+#	pyrm.writeStats()
+#	pyrm.writeLog()
 	
 	
 #for i in range(10):

@@ -100,6 +100,8 @@ class PyRM:
 	def buildTrack(self):
 		channel = 0
 		track = 0
+
+		# do we always want it to start on 0?
 		note_start_time = 0
 
 		note_count = self.__getRandom(self.config.note_count_scope)
@@ -114,6 +116,7 @@ class PyRM:
 
 		self.__logDebug("PITCH", "category	pitch	note_start_time	note_length	volume")
 		for i,category in enumerate(self.categories):
+		
 			volume = self.__getRandom(self.config.volume_scope)
 			note_length = self.__getRandom(self.config.note_length_scope)
 			
@@ -138,9 +141,11 @@ class PyRM:
 			for j in range(self.config.maximum_simultaneous_notes):
 
 				simultaneous_note_chance = self.__getRandom(self.config.simultaneous_note_chance_scope)
+				
 				if simultaneous_note_chance % self.config.simultaneous_notes_chance == 0:
 
 					found_valid_pitch = False
+					
 					while found_valid_pitch == False:
 						# getting a pitch for a simultaneous note doesn't need to be limited by the category
 						pitch = self.__generatePitch(False)
@@ -161,12 +166,13 @@ class PyRM:
 							found_valid_pitch = True
 							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
 							self.__logDebug("PITCH", "SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
+
 				else:
 					break
 
-			# determine next note_start_time after adding the first note
+			# determine next note_start_time AFTER adding the first note
 			# so that we always start the track with the first note @ 0
-			note_start_time = note_start_time + int(self.__getRandom(self.config.note_length_scope) / 4)
+			note_start_time = note_start_time + int(self.__getRandom(self.config.note_length_scope) / self.__getRandom(self.config.start_time_factors))
 
 	@classmethod
 	def writeFile(self, customIdentifier):
@@ -210,7 +216,13 @@ class PyRM:
 					else:
 						return args[0][random.randrange(len(args[0]))]
 				else:
-					raise TypeError("first arg must be a list or int. right now it's:" + type(args[0]))
+					if ((isinstance(args[0], tuple))):
+						rnd = random.randrange(len(args[0]))
+						print(rnd)
+						print(args[0])
+						return args[0][rnd]
+					else:
+						raise TypeError("first arg must be a list or int. right now it's:" + str(type(args[0])))
 		else:
 			raise TypeError("first arg must be a list or int. right now it's not set to anything.")
 

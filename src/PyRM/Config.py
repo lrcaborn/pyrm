@@ -43,6 +43,7 @@ class ConfigBase:
 	forbidden_notes = []
 	unpairable_notes = {}
 	debug_log = True
+	start_time_factors = tuple(range(1, 11))
 	
 	chooser = None
 	
@@ -221,7 +222,7 @@ class ConfigDrumEzxJazzSlow(ConfigDrumEzxJazz):
 	name = "EzxJazzSlow"
 	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE, ConfigBase.TICKS_PER_QUARTERNOTE*2]
 	tempo_scope = [40, 70]
-	note_count_scope = [400,500]
+	note_count_scope = [1000,1500]
 	
 class ConfigDrumBullySlow(ConfigDrumBully):
 	name = "BullyDrumSlow"
@@ -268,11 +269,11 @@ class ConfigOrnament(ConfigBase):
 class ConfigPad(ConfigBase):
 	name = "Pad"
 	simultaneous_notes_chance = 2
-	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE, ConfigBase.TICKS_PER_QUARTERNOTE*2]
+	note_length_scope = [ConfigBase.TICKS_PER_QUARTERNOTE*4, ConfigBase.TICKS_PER_QUARTERNOTE*6]
 	volume_scope = [80, 100]
 	note_scope = [0, 127]
 	tempo_scope = [40, 70]
-	note_count_scope = [100,1500]
+	note_count_scope = [1000,1500]
 	maximum_simultaneous_notes = 8
 	
 	class Category(Enum):
@@ -284,9 +285,9 @@ class ConfigPad(ConfigBase):
 			return self.name
 	
 	note_categories = {
-		Category.LOW.value: list(range(0, 43)),
-		Category.MIDDLE.value: list(range(43 , 86)),
-		Category.HIGH.value: list(range(85, 128))
+		Category.LOW.value: list(range(0, 55)),
+		Category.MIDDLE.value: list(range(56, 74)),
+		Category.HIGH.value: list(range(75, 128))
 	}
 
 	ConfigBase.chooser = lea.pmf({
