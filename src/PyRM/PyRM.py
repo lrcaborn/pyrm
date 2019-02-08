@@ -41,7 +41,7 @@ class PyRM:
 	def __loadConfig(self, config):
 		self.config = config
 		config_info = "using " + config.name + " configuration"
-		self.__logDebug("GENERAL", config_info)
+		print("GENERAL", config_info)
 
 	@classmethod
 	def __frequency(self, midi_note):
@@ -172,7 +172,20 @@ class PyRM:
 
 			# determine next note_start_time AFTER adding the first note
 			# so that we always start the track with the first note @ 0
-			note_start_time = note_start_time + int(self.__getRandom(self.config.note_length_scope) / self.__getRandom(self.config.start_time_factors))
+			old_note_start_time = note_start_time
+
+			try:
+				start_time_factor = self.__getRandom(self.config.start_time_factors)
+			except AttributeError:
+				start_time_factor = 1
+
+			# self.__getRandom(self.config.note_length_scope) or note_length in here?
+			# maybe make this ocnfigurable?
+			note_start_time = note_start_time + int(note_length / start_time_factor)
+
+			if note_start_time < 0:
+				note_start_time *= -1
+			
 
 	@classmethod
 	def writeFile(self, customIdentifier):
@@ -218,8 +231,6 @@ class PyRM:
 				else:
 					if ((isinstance(args[0], tuple))):
 						rnd = random.randrange(len(args[0]))
-						print(rnd)
-						print(args[0])
 						return args[0][rnd]
 					else:
 						raise TypeError("first arg must be a list or int. right now it's:" + str(type(args[0])))
