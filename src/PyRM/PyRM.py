@@ -29,7 +29,7 @@ class PyRM:
 	def __init__(self, config):
 		logging.basicConfig(filename='debug.log',level=logging.DEBUG)
 		self.__loadConfig(config)
-		self.midi = MIDIFile(1, deinterleave = False, eventtime_is_ticks = True, ticks_per_quarternote = config.TICKS_PER_QUARTERNOTE)
+		self.midi = MIDIFile(1, deinterleave = False, eventtime_is_ticks = True, ticks_per_quarternote = config.note_config.ticks_per_quarternote)
 		self.debug_tables = {
 			"GENERAL": [],
 			"PITCH": [],
@@ -53,15 +53,15 @@ class PyRM:
 		try:
 			category = self.config.chooser.random()
 			if isPrimaryNote:
-				range = self.config.note_categories[category]
+				range = self.config.note_config.categories[category]
 				pitch = range[self.__getRandom(len(range))]
 				self.__logDebug("PITCH", "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + " from category: " + str(category) + " with range: " + str(range))
 			else:
-				range = self.config.note_scope
+				range = self.config.note_config.scope
 				pitch = self.__getRandom(range)
 				self.__logDebug("PITCH", "HAVE CHOOSER - NONPRIMARY pitch: " + str(pitch) + " from category: " + str(category) + " with range: " + str(range))
 		except AttributeError:
-			range = self.config.note_scope
+			range = self.config.note_config.scope
 			pitch = self.__getRandom(range)
 			self.__logDebug("PITCH", "NO CHOOSER - pitch: " + str(pitch) + " from range: " + str(range))
 
@@ -104,7 +104,7 @@ class PyRM:
 		# do we always want it to start on 0?
 		note_start_time = 0
 
-		note_count = self.__getRandom(self.config.note_count_scope)
+		note_count = self.__getRandom(self.config.note_config.count_scope)
 		# generates tuple of categories that will match up reasonably well with 
 		# the probabilities specified when defining the chooser in the config
 		self.categories = self.config.chooser.random(note_count)
@@ -115,10 +115,10 @@ class PyRM:
 		self.__logDebug("TEMPO", str(track) + "	" + str(note_start_time) + "	" + str(tempo))
 
 		self.__logDebug("PITCH", "category	pitch	note_start_time	note_length	volume")
-		for i,category in enumerate(self.categories):
+		for i,category in enumerate(self.config.note_config.categories):
 		
 			volume = self.__getRandom(self.config.volume_scope)
-			note_length = self.__getRandom(self.config.note_length_scope)
+			note_length = self.__getRandom(self.config.note_config.length_scope)
 			
 			pitch = self.__generatePitch(True)
 
@@ -138,11 +138,11 @@ class PyRM:
 			# SIMULTANEOUS NOTES #
 			######################
 			simultaneous_pitches = [pitch]
-			for j in range(self.config.maximum_simultaneous_notes):
+			for j in range(self.config.note_config.max_simultaneous):
 
-				simultaneous_note_chance = self.__getRandom(self.config.simultaneous_note_chance_scope)
+				simultaneous_note_chance = self.__getRandom(self.config.note_config.simultaneous_chance_scope)
 				
-				if simultaneous_note_chance % self.config.simultaneous_notes_chance == 0:
+				if simultaneous_note_chance % self.config.note_config.simultaneous_chance == 0:
 
 					found_valid_pitch = False
 					
@@ -154,14 +154,14 @@ class PyRM:
 							# we don't want to add notes already used to the list of simultaneous pitches
 							self.__logDebug("PITCH", "SIM NOTE failure: " + str(pitch) + " already used: " + str(simultaneous_pitches))
 							break
-						elif (pitch in self.config.note_categories[category]):
+						elif (pitch in self.config.note_config.categories[category]):
 							# we don't want to add notes that are unpairable with the first note
-							self.__logDebug("PITCH", "SIM NOTE failure: pitch " + str(pitch) + " is in the current category " + str(self.config.note_categories[category]))
+							self.__logDebug("PITCH", "SIM NOTE failure: pitch " + str(pitch) + " is in the current category " + str(self.config.note_config.categories[category]))
 							break
-						elif (simultaneous_pitches[0] in self.config.unpairable_notes and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
-							# we don't want to add notes that are unpairable with the first note
-							self.__logDebug("PITCH", "SIM NOTE failure: simultaneous_pitches[0] " + str(simultaneous_pitches[0]) + " unpairable with " + str(pitch))
-							break
+						#elif (simultaneous_pitches[0] in self.config.note_config.unpairable and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
+						#	# we don't want to add notes that are unpairable with the first note
+						#	self.__logDebug("PITCH", "SIM NOTE failure: simultaneous_pitches[0] " + str(simultaneous_pitches[0]) + " unpairable with " + str(pitch))
+						#	break
 						else:
 							found_valid_pitch = True
 							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)

@@ -1,0 +1,57 @@
+class ConfigDrumKitCoreMtDill(ConfigDrum):
+	name = "Kit-Core Mt Dill"
+	note_config = ConfigDrum.note_config
+
+	note_scope = [24, 39]
+	maximum_simultaneous_notes = 4
+	note_length_scope = [1, note_config.ticks_per_quarternote/2]
+	tempo_scope = [150, 180]
+	volume_scope = [90, 127]
+	note_count_scope = [500, 1000]
+
+	
+	
+	
+	
+
+
+	
+
+
+class ConfigPadSynth(ConfigBase):
+	name = "Pad Synth"
+	simultaneous_notes_chance = 4
+	note_length_scope = [ConfigBase.ticks_per_quarternote*4, ConfigBase.ticks_per_quarternote*16]
+	volume_scope = [80, 100]
+	note_scope = [21, 109]
+	tempo_scope = [40, 100]
+	note_count_scope = [1000, 1100]
+	maximum_simultaneous_notes = 5
+	# skip 0 so we avoid division by 0 errors
+	start_time_factors = tuple(range(1, 3))
+
+	class Category(Enum):
+		LOW = "Low"
+		MIDDLE = "Middle"
+		HIGH = "High"
+		
+		def __str__(self):
+			return self.name
+	
+	note_categories = {
+		Category.LOW.value: list(range(note_scope[0], 50)),
+		Category.MIDDLE.value: list(range(51, 75)),
+		Category.HIGH.value: list(range(76, note_scope[1]))
+	}
+
+	ConfigBase.chooser = lea.pmf({
+		Category.LOW.value: 0.1,
+		Category.MIDDLE.value: 0.8,
+		Category.HIGH.value: 0.1,
+	})	
+
+# work on making this one more comp-y sounding
+
+	
+	
+	
