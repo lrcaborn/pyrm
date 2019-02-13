@@ -105,9 +105,13 @@ class PyRM:
 		note_start_time = 0
 
 		note_count = self.__getRandom(self.config.note_config.count_scope)
+		self.__logDebug("GENERAL", "Will be adding " + str(note_count) + " notes")
+
 		# generates tuple of categories that will match up reasonably well with 
 		# the probabilities specified when defining the chooser in the config
 		self.categories = self.config.chooser.random(note_count)
+		
+		self.__logDebug("GENERAL", str(len(self.categories)) + " categories created")
 		
 		tempo = self.__getRandom(self.config.tempo_scope)
 		self.midi.addTempo(track, note_start_time, tempo)
@@ -115,7 +119,10 @@ class PyRM:
 		self.__logDebug("TEMPO", str(track) + "	" + str(note_start_time) + "	" + str(tempo))
 
 		self.__logDebug("PITCH", "category	pitch	note_start_time	note_length	volume")
-		for i,category in enumerate(self.config.note_config.categories):
+
+		for i,category in enumerate(self.categories):
+		
+			self.__logDebug("PITCH", "currently on category " + str(i))
 		
 			volume = self.__getRandom(self.config.volume_scope)
 			note_length = self.__getRandom(self.config.note_config.length_scope)
@@ -139,35 +146,40 @@ class PyRM:
 			######################
 			simultaneous_pitches = [pitch]
 			for j in range(self.config.note_config.max_simultaneous):
-
+				self.__logDebug("PITCH", "on " + str(j) + " of " + str(self.config.note_config.max_simultaneous))
 				simultaneous_note_chance = self.__getRandom(self.config.note_config.simultaneous_chance_scope)
+				self.__logDebug("PITCH", "simultaneous_note_chance: " + str(simultaneous_note_chance) + " self.config.note_config.simultaneous_chance: " + str(self.config.note_config.simultaneous_chance))
 				
 				if simultaneous_note_chance % self.config.note_config.simultaneous_chance == 0:
 
-					found_valid_pitch = False
+					self.__logDebug("PITCH", "generating simultaneous note")
+				
+					try_to_generate_simultaneous_note = True
 					
-					while found_valid_pitch == False:
+					while try_to_generate_simultaneous_note == True:
 						# getting a pitch for a simultaneous note doesn't need to be limited by the category
 						pitch = self.__generatePitch(False)
 
 						if pitch in simultaneous_pitches: 
 							# we don't want to add notes already used to the list of simultaneous pitches
 							self.__logDebug("PITCH", "SIM NOTE failure: " + str(pitch) + " already used: " + str(simultaneous_pitches))
+							try_to_generate_simultaneous_note = False
 							break
 						elif (pitch in self.config.note_config.categories[category]):
 							# we don't want to add notes that are unpairable with the first note
 							self.__logDebug("PITCH", "SIM NOTE failure: pitch " + str(pitch) + " is in the current category " + str(self.config.note_config.categories[category]))
-							break
+							try_to_generate_simultaneous_note = False
 						#elif (simultaneous_pitches[0] in self.config.note_config.unpairable and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
 						#	# we don't want to add notes that are unpairable with the first note
 						#	self.__logDebug("PITCH", "SIM NOTE failure: simultaneous_pitches[0] " + str(simultaneous_pitches[0]) + " unpairable with " + str(pitch))
 						#	break
 						else:
-							found_valid_pitch = True
+							try_to_generate_simultaneous_note = False
 							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
 							self.__logDebug("PITCH", "SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
 
 				else:
+					self.__logDebug("PITCH", "NOT generating simultaneous note")
 					break
 
 			# determine next note_start_time AFTER adding the first note
