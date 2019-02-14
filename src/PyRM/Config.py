@@ -15,16 +15,7 @@ import lea
 # 105-116 A7-G#0
 # 117-128 A8-G#8
 
-# CHANCE int to percentage likelihood
-# 1 = 100% chance
-# 2 = 50% 
-# 3 = 33% 
-# 4 = 25%
-# 5 = 20%
-# 10 = 10%
-# 20 = 5%
-# 50 = 2%
-# 100 = 1%
+
 
 class NoteConfig:
 	categories = {}
@@ -33,8 +24,10 @@ class NoteConfig:
 	length_scope = []
 	max_simultaneous = 0
 	scope = []
-	simultaneous_chance = 1
-	simultaneous_chance_scope = []
+	simultaneous_chance = lea.pmf({
+		True: 1,
+		False: 0
+	})
 	span_scope = []
 	ticks_per_quarternote = 480 #960
 	
@@ -54,8 +47,10 @@ class ConfigBase:
 	note_config.count_scope = [100, 1000]
 	note_config.length_scope = [1, note_config.ticks_per_quarternote*4]
 	note_config.max_simultaneous = 3
-	note_config.simultaneous_chance = 4
-	note_config.simultaneous_chance_scope = [1, 100]
+	note_config.simultaneous_chance = lea.pmf({
+		True: 0.25,
+		False: 0.75
+	})
 	note_config.scope = [21, 108] # A0 to C8
 	
 	tempo_scope = [30, 200]
@@ -64,7 +59,8 @@ class ConfigBase:
 
 	@classmethod
 	def getStats(self):
-		print(self.chooser)
+		print(self.note_config.chooser)
+		print(self.note_config.simultaneous_chance)
 
 	
 	
@@ -89,7 +85,6 @@ class ConfigBassSlow(ConfigBass):
 	note_config.max_simultaneous = 3
 	note_config.scope = [26, 60]
 	#note_config.simultaneous_chance = config.simultaneous_chance
-	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
 	#note_config.span_scope = config.span_scope
 
 
@@ -108,7 +103,6 @@ class ConfigBassFast(ConfigBass):
 	note_config.max_simultaneous = 2
 	note_config.scope = [26, 48]
 	#note_config.simultaneous_chance = config.simultaneous_chance
-	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
 	#note_config.span_scope = config.span_scope
 
 	
@@ -194,18 +188,7 @@ class ConfigDrumBully(ConfigDrum):
 		Category.RIDE_CYMBAL.value: [51,53],
 		Category.COWBELL.value: [54,56]
 	}
-	#note_config.count_scope = note_config.count_scope
-	note_config.forbidden_notes = {17,18,19,20,33,34,35,58,61}
-	#note_config.length_scope = note_config.length_scope
-	#note_config.max_simultaneous = note_config.max_simultaneous
-	note_config.scope = list(set(range(16, 65)) - note_config.forbidden_notes)
-	note_config.simultaneous_chance = 2
-	#note_config.simultaneous_chance_scope = note_config.simultaneous_chance_scope
-	#note_config.span_scope = note_config.span_scope
-
-	volume_scope = [90, 127]
-
-	ConfigDrum.chooser = lea.pmf({
+	note_config.chooser = lea.pmf({
 		Category.COWBELL.value: 0.05,
 		Category.CYMBAL_CRASHES.value: 0,
 		Category.HAT.value: 0.15,
@@ -214,7 +197,20 @@ class ConfigDrumBully(ConfigDrum):
 		Category.SNARE.value: 0.25,
 		Category.TOM.value: 0.10
 	})
+	#note_config.count_scope = note_config.count_scope
+	note_config.forbidden_notes = {17,18,19,20,33,34,35,58,61}
+	#note_config.length_scope = note_config.length_scope
+	#note_config.max_simultaneous = note_config.max_simultaneous
+	note_config.scope = list(set(range(16, 65)) - note_config.forbidden_notes)
+	#note_config.simultaneous_chance = lea.pmf({
+	#	True: 0.25,
+	#	False: 0.75
+	#})
+	#note_config.span_scope = note_config.span_scope
 
+	volume_scope = [90, 127]
+
+	
 class ConfigDrumBullySlow(ConfigDrumBully):
 	name = "BullyDrumSlow"
 
@@ -257,19 +253,7 @@ class ConfigDrumEzxJazz(ConfigDrum):
 		Category.CRASH.value: [27,28,29,49,54,55,83,94,95],
 		Category.TOM.value: [4,5,41,43,45,47,48,50,72,73,74,75,77,78,79,80,81,82]
 	}
-	#note_config.count_scope = note_config.count_scope
-	note_config.forbidden_notes = {1,2,3,56,76}
-	#note_config.length_scope = note_config.length_scope
-	#note_config.max_simultaneous = note_config.max_simultaneous
-	note_config.scope = list(set(range(0, 128)) - note_config.forbidden_notes)
-	note_config.simultaneous_chance = 2
-	#note_config.simultaneous_chance_scope = note_config.simultaneous_chance_scope
-	#note_config.span_scope = note_config.span_scope			
-
-	# skip 0 so we avoid division by 0 errors
-	start_time_factors = tuple(range(-1, 0)) + tuple(range(1, 11))
-
-	ConfigDrum.chooser = lea.pmf({
+	note_config.chooser = lea.pmf({
 		Category.CRASH.value: 0,
 		Category.HAT.value: 0.15,
 		Category.KICK.value: 0.25,
@@ -277,6 +261,21 @@ class ConfigDrumEzxJazz(ConfigDrum):
 		Category.SNARE.value: 0.25,
 		Category.TOM.value: 0.15
 	})	
+	#note_config.count_scope = note_config.count_scope
+	note_config.forbidden_notes = {1,2,3,56,76}
+	#note_config.length_scope = note_config.length_scope
+	#note_config.max_simultaneous = note_config.max_simultaneous
+	note_config.scope = list(set(range(0, 128)) - note_config.forbidden_notes)
+	note_config.simultaneous_chance = lea.pmf({
+		True: 0.5,
+		False: 0.5
+	})
+	#note_config.simultaneous_chance_scope = note_config.simultaneous_chance_scope
+	#note_config.span_scope = note_config.span_scope			
+
+	# skip 0 so we avoid division by 0 errors
+	start_time_factors = tuple(range(-1, 0)) + tuple(range(1, 11))
+
 
 class ConfigDrumEzxJazzSlow(ConfigDrumEzxJazz):
 	name = "EzxJazzSlow"
@@ -293,6 +292,22 @@ class ConfigDrumEzxJazzSlow(ConfigDrumEzxJazz):
 	#note_config.span_scope = config.span_scope			
 	
 	tempo_scope = [40, 70]
+
+class ConfigDrumEzxJazzMid(ConfigDrumEzxJazz):
+	name = "EzxJazzMid"
+	
+	note_config = ConfigDrumEzxJazz.note_config
+	#note_config.categories = config.categories
+	note_config.count_scope = [75,125]
+	#note_config.forbidden_notes = config.forbidden_notes
+	note_config.length_scope = [note_config.ticks_per_quarternote, note_config.ticks_per_quarternote*2]
+	#note_config.max_simultaneous = 3
+	#note_config.scope = list(set(range(0, 128)) - forbidden_notes)
+	#note_config.simultaneous_chance = 2
+	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
+	#note_config.span_scope = config.span_scope			
+	
+	tempo_scope = [70, 140]
 	
 class ConfigDrumEzxJazzFast(ConfigDrumEzxJazz):
 	name = "EzxJazzFast"
@@ -340,26 +355,27 @@ class ConfigOrnamentPiano(ConfigOrnament):
 	note_config = ConfigOrnament.note_config
 	note_config.scope = [21, 109]
 	note_config.categories = {
-		Category.LOW.value: list(range(note_config.scope[0], 45)),
-		Category.HIGH.value: list(range(46, note_config.scope[1]))
+		Category.LOW.value: list(range(note_config.scope[0], 56)),
+		Category.HIGH.value: list(range(57, note_config.scope[1]))
 	}
-	note_config.count_scope = [30, 50]
+	note_config.chooser = lea.pmf({
+		Category.LOW.value: 0.15,
+		Category.HIGH.value: 0.85,
+	})
+	note_config.count_scope = [15, 20]
 	#note_config.forbidden_notes = config.forbidden_notes
-	note_config.length_scope = [note_config.ticks_per_quarternote/4, note_config.ticks_per_quarternote]
+	note_config.length_scope = [note_config.ticks_per_quarternote/2, note_config.ticks_per_quarternote]
 	note_config.max_simultaneous = 4
 	#note_config.simultaneous_chance = 2
 	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
 	#note_config.span_scope = config.span_scope
 	
 	volume_scope = [80, 100]
-	tempo_scope = [100, 150]
+	tempo_scope = [200, 250]
 
 	start_time_factors = tuple(range(1, 5))
 
-	ConfigOrnament.chooser = lea.pmf({
-		Category.LOW.value: 0.25,
-		Category.HIGH.value: 0.75,
-	})
+
 
 class ConfigPadPiano(ConfigBase):
 	name = "Pad Piano"
@@ -379,22 +395,26 @@ class ConfigPadPiano(ConfigBase):
 		Category.MIDDLE.value: list(range(61, 70)),
 		Category.HIGH.value: list(range(71, note_config.scope[1]))
 	}
-	note_config.count_scope = [30, 50]
-	#note_config.forbidden_notes = config.forbidden_notes
-	note_config.length_scope = [note_config.ticks_per_quarternote, note_config.ticks_per_quarternote*4]
-	note_config.max_simultaneous = 6
-	note_config.simultaneous_chance = 2
-	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
-	#note_config.span_scope = config.span_scope
-	
-	tempo_scope = [150, 200]
-	volume_scope = [80, 100]
-	
-	ConfigBase.chooser = lea.pmf({
+	note_config.chooser = lea.pmf({
 		Category.LOW.value: 0.025,
 		Category.MIDDLE.value: 0.95,
 		Category.HIGH.value: 0.025,
 	})
+	note_config.count_scope = [30, 50]
+	#note_config.forbidden_notes = config.forbidden_notes
+	note_config.length_scope = [note_config.ticks_per_quarternote, note_config.ticks_per_quarternote*4]
+	note_config.max_simultaneous = 5
+	note_config.simultaneous_chance = lea.pmf({
+		True: 0.5,
+		False: 0.5
+	})
+	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
+	#note_config.span_scope = config.span_scope
+	note_config.start_time_factors = tuple(range(-5, 0))
+
+	tempo_scope = [150, 200]
+	volume_scope = [80, 100]
+	
 
 class ConfigCompPiano(ConfigBase):
 	name = "Comp Piano"
@@ -414,20 +434,24 @@ class ConfigCompPiano(ConfigBase):
 		Category.MIDDLE.value: list(range(61, 70)),
 		Category.HIGH.value: list(range(71, note_config.scope[1]))
 	}
-	note_config.count_scope = [30, 50]
-	#note_config.forbidden_notes = config.forbidden_notes
-	note_config.length_scope = [note_config.ticks_per_quarternote/2, note_config.ticks_per_quarternote*2]
-	note_config.max_simultaneous = 3
-	note_config.simultaneous_chance = 1
-	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
-	#note_config.span_scope = config.span_scope
-	
-	tempo_scope = [80, 120]
-	volume_scope = [80, 100]
-
-	ConfigBase.chooser = lea.pmf({
+	note_config.chooser = lea.pmf({
 		Category.LOW.value: 0.025,
 		Category.MIDDLE.value: 0.95,
 		Category.HIGH.value: 0.025,
 	})
+	note_config.count_scope = [30, 50]
+	#note_config.forbidden_notes = config.forbidden_notes
+	note_config.length_scope = [note_config.ticks_per_quarternote/2, note_config.ticks_per_quarternote*4]
+	note_config.max_simultaneous = 3
+	note_config.simultaneous_chance = lea.pmf({
+		True: 0.85,
+		False: 0.15
+	})
+	#note_config.simultaneous_chance_scope = config.simultaneous_chance_scope
+	#note_config.span_scope = config.span_scope
+	note_config.start_time_factors = tuple(range(-10, 0))
+	
+	tempo_scope = [80, 120]
+	volume_scope = [80, 100]
+
 	

@@ -51,7 +51,7 @@ class PyRM:
 	@classmethod
 	def __generatePitch(self, isPrimaryNote):
 		try:
-			category = self.config.chooser.random()
+			category = self.config.note_config.chooser.random()
 			if isPrimaryNote:
 				range = self.config.note_config.categories[category]
 				pitch = range[self.__getRandom(len(range))]
@@ -109,7 +109,7 @@ class PyRM:
 
 		# generates tuple of categories that will match up reasonably well with 
 		# the probabilities specified when defining the chooser in the config
-		self.categories = self.config.chooser.random(note_count)
+		self.categories = self.config.note_config.chooser.random(note_count)
 		
 		self.__logDebug("GENERAL", str(len(self.categories)) + " categories created")
 		
@@ -147,10 +147,8 @@ class PyRM:
 			simultaneous_pitches = [pitch]
 			for j in range(self.config.note_config.max_simultaneous):
 				self.__logDebug("PITCH", "on " + str(j) + " of " + str(self.config.note_config.max_simultaneous))
-				simultaneous_note_chance = self.__getRandom(self.config.note_config.simultaneous_chance_scope)
-				self.__logDebug("PITCH", "simultaneous_note_chance: " + str(simultaneous_note_chance) + " self.config.note_config.simultaneous_chance: " + str(self.config.note_config.simultaneous_chance))
 				
-				if simultaneous_note_chance % self.config.note_config.simultaneous_chance == 0:
+				if self.config.note_config.simultaneous_chance.random() == True:
 
 					self.__logDebug("PITCH", "generating simultaneous note")
 				
@@ -175,6 +173,7 @@ class PyRM:
 						#	break
 						else:
 							try_to_generate_simultaneous_note = False
+							note_length = self.__getRandom(self.config.note_config.length_scope)
 							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
 							self.__logDebug("PITCH", "SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
 
