@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import json
+import jsonpickle
 import lea
 import logging
 import random
@@ -7,14 +7,33 @@ import uuid
 
 from midiutil import MIDIFile
 
-# TODO
-# map ezdrummer kits
+def jsonDefault(OrderedDict):
+    return OrderedDict.__dict__
+	
+class Note:
+	def __init__(self, length = 0, pitch = 0, volume = 0):
+		self.length = length
+		self.pitch = pitch
+		self.volume = volume
+
+class Track:
+	def __init__(self):
+		# tempos is just key/value. Key = start time and value is the tempo
+		self.tempos = dict()
+		# notes is key/value with key being start time and value being a list of note objects
+		self.notes = dict()
+		
+	def __repr__(self):
+		return jsonpickle.encode(self)
+		#return json.dumps(self, default=jsonDefault, indent=4)
 
 class PyRM:
 	config = None
 	midi = None
 	categories = None
 
+	track = Track()
+	
 	debug_tables = {
 		"GENERAL": [],
 		"PITCH": [],
@@ -95,11 +114,24 @@ class PyRM:
 		self.debug_tables[debug_table].append(message)
 		#logging.debug(message)
 		#print(message)
+		
+	@classmethod
+	def __createNote(self, note_length, pitch, volume):
+		return Note(note_length, pitch, volume)
+
+	@classmethod
+	def addNote(self, start_time, note):
+		if (start_time not in self.track.notes):
+			self.track.notes[start_time] = list()
+		
+#		if (isinstance(self.track.notes[start_time], set) == False):
+#			self.track.notes[start_time] = list()
+		self.track.notes[start_time].append(note)
 			
 	@classmethod
 	def buildTrack(self):
 		channel = 0
-		track = 0
+		track_number = 0
 
 		# do we always want it to start on 0?
 		note_start_time = 0
@@ -113,10 +145,16 @@ class PyRM:
 		
 		self.__logDebug("GENERAL", str(len(self.categories)) + " categories created")
 		
-		tempo = self.__getRandom(self.config.tempo_scope)
-		self.midi.addTempo(track, note_start_time, tempo)
+		
+		use_tempo_change = self.config.tempo_scope[0] != self.config.tempo_scope[1]
+
+		if use_tempo_change:
+			self.track.tempos[note_start_time] = self.__getRandom(self.config.tempo_scope)
+		else:
+			self.track.tempos[note_start_time] = self.config.tempo_scope[0]
+		
 		self.__logDebug("TEMPO", "TRACK	NOTE_START_TIME	TEMPO")
-		self.__logDebug("TEMPO", str(track) + "	" + str(note_start_time) + "	" + str(tempo))
+		self.__logDebug("TEMPO", str(track_number) + "	" + str(note_start_time) + "	" + str(self.track.tempos[note_start_time]))
 
 		self.__logDebug("PITCH", "category	pitch	note_start_time	note_length	volume")
 
@@ -132,13 +170,15 @@ class PyRM:
 			################
 			# TEMPO CHANGE #
 			################
-			tempo_change_chance = self.__getRandom(self.config.tempo_change_chance_range)
-			if tempo_change_chance % self.config.tempo_change_chance == 0:
-				tempo = self.__getRandom(self.config.tempo_scope)
-				self.midi.addTempo(track, note_start_time, tempo)
-				self.__logDebug("TEMPO", str(track) + "	" + str(note_start_time) + "	" + str(tempo))
+			if use_tempo_change:
+				tempo_change_chance = self.__getRandom(self.config.tempo_change_chance_range)
+				if tempo_change_chance % self.config.tempo_change_chance == 0:
+					self.track.tempos[note_start_time] = self.__getRandom(self.config.tempo_scope)
+
+					self.__logDebug("TEMPO", str(track_number) + "	" + str(note_start_time) + "	" + str(self.track.tempos[note_start_time]))
 			
-			self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
+			self.addNote(note_start_time, self.__createNote(note_length, pitch, volume))
+			
 			self.__logDebug("PITCH", str(category) + "	" + str(pitch) + "	" + str(note_start_time) + "	" + str(note_length) + "	" + str(volume))
 			
 			######################
@@ -174,7 +214,8 @@ class PyRM:
 						else:
 							try_to_generate_simultaneous_note = False
 							note_length = self.__getRandom(self.config.note_config.length_scope)
-							self.midi.addNote(track, channel, pitch, note_start_time, note_length, volume)
+							self.addNote(note_start_time, self.__createNote(note_length, pitch, volume))
+
 							self.__logDebug("PITCH", "SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
 
 				else:
@@ -197,17 +238,60 @@ class PyRM:
 			if note_start_time < 0:
 				note_start_time *= -1
 			
+	@classmethod
+	def writeTrack(self):
+		print(self.track.__repr__)
+	
+	@classmethod
+	def importJsonFileToTrack(self, filename):
+		with open(filename, 'r') as f:
+			content = f.read()
+
+		self.track = jsonpickle.decode(content)
 
 	@classmethod
-	def writeFile(self, customIdentifier):
+	def exportTrackToJsonFile(self, customIdentifier):
 		id = customIdentifier
 		if id == "":
 			id += "."
+		
+		filename = self.config.name + "." + str(id) + str(uuid.uuid4()) + ".json"
+
+		with open(filename, "w") as f:
+			f.write(self.track.__repr__())
+		
+		return filename
+	
+	@classmethod
+	def convertTrackToMidi(self):
+		track_number = 0
+		channel = 0
+
+		# add tempos
+		for start_time in self.track.tempos:
+			print("start_time: " + str(start_time) + " tempo: " + str(self.track.tempos[start_time]))
+			self.midi.addTempo(int(track_number), int(start_time), int(self.track.tempos[start_time]))
+
+		# add notes
+		for start_time in self.track.notes:
+			print("start_time: " + str(start_time))
+			for note in self.track.notes[start_time]:
+				self.midi.addNote(int(track_number), int(channel), int(note.pitch), int(start_time), int(note.length), int(note.volume))
+				print("  length: " + str(note.length) + " pitch: " + str(note.pitch) + " volume: " + str(note.volume))
+
+	@classmethod
+	def exportMidiFile(self, customIdentifier):
+		id = customIdentifier
+		if id == "":
+			id += "."
+
 		filename = self.config.name + "." + str(id) + str(uuid.uuid4()) + ".mid"
 			
 		with open(filename, "wb") as output_file:
 			self.midi.writeFile(output_file)
 			
+		return filename
+
 	@classmethod
 	def writeStats(self):
 		self.__logDebug("GENERAL", self.config.getStats())
@@ -236,7 +320,9 @@ class PyRM:
 						if (args[0][0] == args[0][1]):
 							return args[0][0]
 						else:
-							return random.randrange(args[0][0], args[0][1])
+							num = random.randrange(args[0][0], args[0][1])
+							#print("returning " + str(num) + " which is between " + str(args[0][0]) + " and " + str(args[0][1]))
+							return num
 					else:
 						return args[0][random.randrange(len(args[0]))]
 				else:

@@ -2,34 +2,24 @@
 
 from PyRM import PyRM, Config
 
-#for i in range(10):
-#	config = Config.ConfigOrnamentPiano()
-#	pyrm = PyRM.PyRM(config)
-#	pyrm.buildTrack()
-#	pyrm.writeFile(str(i))
-#	pyrm.writeStats()
-#	pyrm.writeLog()
+for i in range(1):
+	config = Config.ConfigPadSynth()
+	pyrm = PyRM.PyRM(config)
+	pyrm.buildTrack()
+	pyrm.convertTrackToMidi()
+	midiFile = pyrm.exportMidiFile(str(i))
+	print("exported midi file: " + midiFile)
+	jsonFile = pyrm.exportTrackToJsonFile(str(i))
+	print("exported json file: " + jsonFile)
+	i += 1
 
-for i in range(10):
-	config = Config.ConfigPadPiano()
-	pyrm = PyRM.PyRM(config)
-	pyrm.buildTrack()
-	pyrm.writeFile(str(i))
-	pyrm.writeStats()
-	pyrm.writeLog()
+
+	config2 = Config.ConfigPadSynth()
+	pyrm2 = PyRM.PyRM(config2)
+	pyrm2.importJsonFileToTrack(jsonFile)
+	midiFile = pyrm2.exportMidiFile(str(i))
+	pyrm.convertTrackToMidi()
+	print("exported midi file: " + midiFile)
+	jsonFile = pyrm2.exportTrackToJsonFile(str(i))
+	print("exported json file: " + jsonFile)
 	
-for i in range(10):
-	config = Config.ConfigCompPiano()
-	pyrm = PyRM.PyRM(config)
-	pyrm.buildTrack()
-	pyrm.writeFile(str(i))
-	pyrm.writeStats()
-	pyrm.writeLog()
-	
-for i in range(20):
-	config = Config.ConfigDrumEzxJazzMid()
-	pyrm = PyRM.PyRM(config)
-	pyrm.buildTrack()
-	pyrm.writeFile(str(i))
-	pyrm.writeStats()
-	pyrm.writeLog()
