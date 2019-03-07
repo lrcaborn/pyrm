@@ -269,15 +269,15 @@ class PyRM:
 
 		# add tempos
 		for start_time in self.track.tempos:
-			print("start_time: " + str(start_time) + " tempo: " + str(self.track.tempos[start_time]))
+			#print("start_time: " + str(start_time) + " tempo: " + str(self.track.tempos[start_time]))
 			self.midi.addTempo(int(track_number), int(start_time), int(self.track.tempos[start_time]))
 
 		# add notes
 		for start_time in self.track.notes:
-			print("start_time: " + str(start_time))
+			#print("start_time: " + str(start_time))
 			for note in self.track.notes[start_time]:
 				self.midi.addNote(int(track_number), int(channel), int(note.pitch), int(start_time), int(note.length), int(note.volume))
-				print("  length: " + str(note.length) + " pitch: " + str(note.pitch) + " volume: " + str(note.volume))
+				#print("  length: " + str(note.length) + " pitch: " + str(note.pitch) + " volume: " + str(note.volume))
 
 	@classmethod
 	def exportMidiFile(self, customIdentifier):
