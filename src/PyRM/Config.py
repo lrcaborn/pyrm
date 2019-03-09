@@ -29,6 +29,7 @@ class ConfigBase:
 
 		self.volume_scope = [1, 127]
 
+		
 		self.note_config = NoteConfig()
 		self.note_config.ticks_per_quarternote = 480 # can be up to 960
 		self.note_config.count_scope = [100, 1000]
@@ -39,6 +40,12 @@ class ConfigBase:
 			False: 0.75
 		})
 		self.note_config.scope = [21, 108] # A0 to C8
+		
+		self.phrase_length_scope = [3, 10]
+		self.phrase_record_chance = lea.pmf({
+			True: 0.5,
+			False: 0.5
+		})
 		
 		self.tempo_scope = [30, 200]
 		self.tempo_change_chance_range = [1, 100]
