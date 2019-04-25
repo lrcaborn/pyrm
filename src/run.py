@@ -1,14 +1,24 @@
 #!/usr/bin/env python
 import pprint
+import argparse
+
 from PyRM import PyRM, Config
 
-for i in range(20):
+parser = argparse.ArgumentParser()
+parser.add_argument("--config_file", "-f", help = "configuration to use", type = str, dest = "config_file")
+parser.add_argument("--count", "-c", help = "number of files to create", type = str, dest = "file_count")
+results = parser.parse_args()
+
+config_file = results.config_file
+file_count = results.file_count or 5
+
+for i in range(file_count):
   config = Config.ConfigPianoLongChords()
   pyrm = PyRM.PyRM(config)
-  pyrm.buildTrack()
+  pyrm.build_track()
   
   #pprint.pprint(pyrm.phrases)
-  pyrm.convertTrackToMidi()
-  midiFile = pyrm.exportMidiFile(str(i))
-  jsonFile = pyrm.exportTrackToJsonFile(str(i))
+  pyrm.convert_track_to_midi()
+  midi_file = pyrm.export_midi_file(str(i))
+  json_file = pyrm.export_track_to_json_file(str(i))
   
