@@ -17,7 +17,7 @@ class Note:
     self.volume = volume
 
   def __repr__(self):
-    return "length: " + str(self.length) + " pitch: " + str(self.pitch) + " volume: " + str(self.volume)
+    return "length: " + str(self.length) + " pitch: " + str(self.pitch) + " volume: " + str(self.volume) + "\n"
 
     
 class Phrase:
@@ -29,7 +29,8 @@ class Phrase:
         self.chords[start_time] = list()
     
     self.chords[start_time].append(note)
-
+#    print("chord self.chords[" + str(start_time) + "] now has " + str(len(self.chords[start_time])) + " notes")
+    
   def __repr__(self):
     return str(self.chords)
 
@@ -133,7 +134,7 @@ class PyRM:
 
     # for tracking how many chords we're recording
     record_index = 0
-    phrase_length = 0
+    phrase_count = 0
 
     note_count = self.__getRandom(self.config.note_config.count_scope)
     self.__logDebug("GENERAL", "Will be adding " + str(note_count) + " notes")
@@ -175,23 +176,34 @@ class PyRM:
       note_length = self.__getRandom(self.config.note_config.length_scope)
   
       pitch = self.__generatePitch(True)
-
-      if (phrase_length == 0):
+      
+      ###############
+      #  RECORDING  #
+      ###############
+      
+      # setup
+      if (phrase_count == 0):
         self.record_phrase = self.config.phrase_record_chance.random()
-        
-      if self.record_phrase == True:
-        if (phrase_length == 0):
-          phrase_length = self.__getRandom(self.config.phrase_length_scope)
+        if (self.record_phrase):
+          phrase_count = self.__getRandom(self.config.phrase_count_scope)
           phrase_index = 0
           self.recorded_phrase = Phrase()
+          #print("starting new phrase")
 
-        if phrase_index < phrase_length:
+      # index management and storage of recorded phrases
+      # addNote handles storing the notes in phrases
+      if (self.record_phrase):
+        if phrase_index < phrase_count:
           phrase_index += 1
         else:
           phrase_index = 0
-          phrase_length = 0
+          phrase_count = 0
+          #print("ending phrase, appending to self.phrases - current length: " + str(len(self.phrases)))
           self.phrases.append(self.recorded_phrase)
+          #print("length after appending: " + str(len(self.phrases)))
+          self.recorded_phrase = None
           self.record_phrase = False
+        
 
       self.addNote(note_start_time, self.__createNote(note_length, pitch, volume))
       
@@ -205,7 +217,6 @@ class PyRM:
         self.__logDebug("PITCH", "on " + str(j) + " of " + str(self.config.note_config.max_simultaneous))
         
         if self.config.note_config.simultaneous_chance.random() == True:
-
           self.__logDebug("PITCH", "generating simultaneous note")
         
           try_to_generate_simultaneous_note = True
@@ -223,40 +234,50 @@ class PyRM:
               # we don't want to add notes that are unpairable with the first note
               self.__logDebug("PITCH", "SIM NOTE failure: pitch " + str(pitch) + " is in the current category " + str(self.config.note_config.categories[category]))
               try_to_generate_simultaneous_note = False
-            #elif (simultaneous_pitches[0] in self.config.note_config.unpairable and pitch in self.config.unpairable_notes[simultaneous_pitches[0]]):
-            #  # we don't want to add notes that are unpairable with the first note
-            #  self.__logDebug("PITCH", "SIM NOTE failure: simultaneous_pitches[0] " + str(simultaneous_pitches[0]) + " unpairable with " + str(pitch))
-            #  break
             else:
               try_to_generate_simultaneous_note = False
               note_length = self.__getRandom(self.config.note_config.length_scope)
               self.addNote(note_start_time, self.__createNote(note_length, pitch, volume))
 
-              self.__logDebug("PITCH", "SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
+              self. __logDebug("PITCH", "SIM NOTE: " + str(category) + " " + str(pitch) + " " + str(note_start_time) + " " + str(note_length) + " " + str(volume))
 
         else:
           self.__logDebug("PITCH", "NOT generating simultaneous note")
           break
 
-      # determine next note_start_time AFTER adding the first note
-      # so that we always start the track with the first note @ 0
-      old_note_start_time = note_start_time
+      note_start_time = self.calculateNoteStartTime(note_start_time, note_length)
 
-      try:
-        start_time_factor = self.__getRandom(self.config.start_time_factors)
-      except AttributeError:
-        start_time_factor = 1
+      self.replay_phrase = self.config.phrase_replay_chance.random()
+      if (self.replay_phrase and len(self.phrases) > 0):
+        phrase = random.choice(self.phrases)
+        #print("\nNEW PHRASE CHOSEN from list with " + str(len(self.phrases)) + " items - ", end='', flush=True)
+        #print("chords in phrase: " + str(len(phrase.chords)), end='', flush=True)
 
-      # self.__getRandom(self.config.note_length_scope) or note_length in here?
-      # maybe make this configurable?
-      note_start_time = note_start_time + int(note_length / start_time_factor)
+        for chord in phrase.chords.values():
+          #print("length of the chord: " + str(len(chord)))
+          note_length = chord[0].length
+          for note in chord:
+            #print("note: " + str(note))
+            self.addNote(note_start_time, note)
+        note_start_time = self.calculateNoteStartTime(note_start_time, note_length)
 
-      if note_start_time < 0:
-        note_start_time *= -1
+      
+    
+  def calculateNoteStartTime(self, note_start_time, note_length):
+    try:
+      start_time_factor = self.__getRandom(self.config.start_time_factors)
+    except AttributeError:
+      start_time_factor = 1
 
+    # determine next note_start_time AFTER adding the first note
+    # so that we always start the track with the first note @ 0
+    note_start_time = note_start_time + int(note_length / start_time_factor)
 
+    if note_start_time < 0:
+      note_start_time *= -1
+      
+    return note_start_time
 
-        
   def writeTrack(self):
     print(self.track.__repr__)
 
