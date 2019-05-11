@@ -42,6 +42,13 @@ class Track:
         # value being a list of note objects
         self.notes = dict()
         
+        # recorded_phrases is a list for now
+        # I'm hoping to expand it to have a lea chooser so that
+        # it will move toward having equal selection of the
+        # different recorded phrases OR if possible, preference
+        # for certain phrases. Perhaps longer ones.
+        self.recorded_phrases = list()
+        
     def __repr__(self):
         return jsonpickle.encode(self)
         #return json.dumps(self, default=jsonDefault, indent=4)
@@ -57,11 +64,11 @@ class PyRM:
         self.debug_tables = {
             "GENERAL": [],
             "PITCH": [],
+            "RECORDING": [],
             "TEMPO": [],
             "TUNING": []
         }
         self.track = Track()
-        self.phrases = list()
 
     def _load_config(self, config):
         self.config = config
@@ -76,7 +83,7 @@ class PyRM:
             category = self.config.note_config.chooser.random()
             if isPrimaryNote:
                 range = self.config.note_config.categories[category]
-                pitch = range[self._get_random(len(range))]
+                pitch = self._get_random(range)
                 self._log_debug("PITCH", 
                                     "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + 
                                     " from category: " + str(category) + 
@@ -205,25 +212,11 @@ class PyRM:
             if (phrase_count == 0):
                 self.record_phrase = self.config.phrase_record_chance.random()
                 if (self.record_phrase):
-                    phrase_count = self._get_random(self.config.phrase_count_scope)
-                    phrase_index = 0
                     self.recorded_phrase = Phrase()
-                    #print("starting new phrase")
-
-            # index management and storage of recorded phrases
-            # add_note handles storing the notes in phrases
-            if (self.record_phrase):
-                if phrase_index < phrase_count:
-                    phrase_index += 1
-                else:
                     phrase_index = 0
-                    phrase_count = 0
-                    #print("ending phrase, appending to self.phrases - current length: " + str(len(self.phrases)))
-                    self.phrases.append(self.recorded_phrase)
-                    #print("length after appending: " + str(len(self.phrases)))
-                    self.recorded_phrase = None
-                    self.record_phrase = False
-                
+                    phrase_count = self._get_random(self.config.phrase_count_scope)
+                    self._log_debug("RECORDING", "Initializing record_phrase, " 
+                                    + str(phrase_count) + " phrases to be recorded")
 
             self.add_note(note_start_time, self._create_note(note_length, pitch, volume))
             
@@ -239,56 +232,71 @@ class PyRM:
             ######################
             simultaneous_pitches = [pitch]
             for j in range(self.config.note_config.max_simultaneous):
-                self._log_debug("PITCH", 
-                                    "on " + str(j) + 
-                                    " of " + str(self.config.note_config.max_simultaneous))
+                self._log_debug("PITCH", "on " + str(j) + " of " 
+                                 + str(self.config.note_config.max_simultaneous))
                 
                 if self.config.note_config.simultaneous_chance.random() == True:
                     self._log_debug("PITCH", "generating simultaneous note")
                 
                     try_to_generate_simultaneous_note = True
                     
-                    while try_to_generate_simultaneous_note == True:
-                        # getting a pitch for a simultaneous note doesn't need to be limited by the category
-                        pitch = self._generate_pitch(False)
+                    # getting a pitch for a simultaneous note doesn't need to be limited by the category
+                    pitch = self._generate_pitch(False)
 
-                        if pitch in simultaneous_pitches: 
-                            # we don't want to add notes already used to the list of simultaneous pitches
-                            self._log_debug("PITCH", 
-                                                "SIM NOTE failure: " + str(pitch) + 
-                                                " already used: " + str(simultaneous_pitches))
-                            try_to_generate_simultaneous_note = False
-                            break
-                        elif (pitch in self.config.note_config.categories[category]):
+                    if pitch in simultaneous_pitches: 
+                        # we don't want to add notes already used to the list of simultaneous pitches
+                        self._log_debug("PITCH", 
+                                            "SIM NOTE failure: " + str(pitch) + 
+                                            " already used: " 
+                                            + str(simultaneous_pitches))
+                        break
+                    elif (pitch in self.config.note_config.categories[category]):
+                        if (self.config.note_config.allow_simultaneous_from_same_category == False):
                             # we don't want to add notes that are unpairable with the first note
                             self._log_debug("PITCH", 
-                                                "SIM NOTE failure: pitch " + str(pitch) + 
-                                                " is in the current category " + 
-                                                str(self.config.note_config.categories[category]))
-                            try_to_generate_simultaneous_note = False
-                        else:
-                            try_to_generate_simultaneous_note = False
-                            note_length = self._get_random(self.config.note_config.length_scope)
-                            self.add_note(note_start_time, self._create_note(note_length, pitch, volume))
+                                            "SIM NOTE failure: pitch " + str(pitch) + 
+                                            " is in the current category " + 
+                                            str(self.config.note_config.categories[category]))
+                    else:
+                        note_length = self._get_random(self.config.note_config.length_scope)
+                        self.add_note(note_start_time, self._create_note(note_length, pitch, volume))
 
-                            self. _log_debug("PITCH", 
-                                                "SIM NOTE: " + str(category) + 
-                                                " " + str(pitch) + 
-                                                " " + str(note_start_time) + 
-                                                " " + str(note_length) + 
-                                                " " + str(volume))
+                        self. _log_debug("PITCH", 
+                                            "SIM NOTE: " + str(category) 
+                                            + " " + str(pitch) 
+                                            + " " + str(note_start_time) 
+                                            + " " + str(note_length) 
+                                            + " " + str(volume))
 
                 else:
                     self._log_debug("PITCH", "NOT generating simultaneous note")
                     break
 
+
+            # index management and storage of recorded phrases
+            # add_note handles storing the notes in phrases
+            if (self.record_phrase == True):
+                if phrase_index < phrase_count:
+                    phrase_index += 1
+                else:
+                    phrase_index = 0
+                    phrase_count = 0
+                    self._log_debug("RECORDING", 
+                                    "Adding notes from record_phrase and resetting")
+                    self.track.recorded_phrases.append(self.recorded_phrase)
+                    self.record_phrase = self.config.phrase_record_chance.random()
+                    print("added phrase. current phrase count: " + str(len(self.track.recorded_phrases)))
+            else:
+                self.record_phrase = self.config.phrase_record_chance.random()
+                
             note_start_time = self.calculate_note_start_time(note_start_time, note_length)
 
             self.replay_phrase = self.config.phrase_replay_chance.random()
-            if (self.replay_phrase and len(self.phrases) > 0):
-                phrase = random.choice(self.phrases)
-                #print("\nNEW PHRASE CHOSEN from list with " + str(len(self.phrases)) + " items - ", end='', flush=True)
-                #print("chords in phrase: " + str(len(phrase.chords)), end='', flush=True)
+            if (self.replay_phrase and len(self.track.recorded_phrases) > 0):
+                self.record_phrase = False # override recording so that we don't re-record recorded phrases.
+                phrase = random.choice(self.track.recorded_phrases)
+                print("\nNEW PHRASE CHOSEN from list with " + str(len(self.track.recorded_phrases)) + " items - ", end='', flush=True)
+                print("chords in phrase: " + str(len(phrase.chords)), end='', flush=True)
 
                 for chord in phrase.chords.values():
                     #print("length of the chord: " + str(len(chord)))
@@ -296,10 +304,8 @@ class PyRM:
                     for note in chord:
                         #print("note: " + str(note))
                         self.add_note(note_start_time, note)
-                note_start_time = self.calculate_note_start_time(note_start_time, note_length)
+                    note_start_time = self.calculate_note_start_time(note_start_time, note_length)
 
-            
-        
     def calculate_note_start_time(self, note_start_time, note_length):
         try:
             start_time_factor = self._get_random(self.config.start_time_factors)
