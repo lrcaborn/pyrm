@@ -265,17 +265,17 @@ class ConfigDrumEzxJazzSlow(ConfigDrumEzxJazz):
         self.note_config.length_scope = [self.note_config.ticks_per_quarternote/2, 
                                          self.note_config.ticks_per_quarternote]
         self.start_time_factors = tuple(range(2, 3))
-        self.tempo_scope = [60, 80]
+        self.tempo_scope = [60, 120]
 
 class ConfigDrumEzxJazzMid(ConfigDrumEzxJazz):
     def __init__(self):
         super().__init__()
         self.name = "EzxJazzMid"
         self.note_config.count_scope = [600, 1000]
-        self.note_config.length_scope = [self.note_config.ticks_per_quarternote/2, 
-                                         self.note_config.ticks_per_quarternote]
+        self.note_config.length_scope = [self.note_config.ticks_per_quarternote, 
+                                         self.note_config.ticks_per_quarternote*2]
         self.start_time_factors = tuple(range(1, 2))
-        self.tempo_scope = [80, 130]
+        self.tempo_scope = [120, 180]
 
 class ConfigDrumEzxJazzFast(ConfigDrumEzxJazz):
     def __init__(self):
@@ -290,11 +290,11 @@ class ConfigDrumEzxJazzFast(ConfigDrumEzxJazz):
             Category.TOM.value: 0.1
         })
         self.note_config.count_scope = [500, 1000]
-        self.note_config.length_scope = [self.note_config.ticks_per_quarternote/4, 
-                                         self.note_config.ticks_per_quarternote/2]
+        self.note_config.length_scope = [self.note_config.ticks_per_quarternote*2, 
+                                         self.note_config.ticks_per_quarternote*4]
         self.note_config.start_time_factors = (tuple(range(-1, 0)) 
                                                + tuple(range(1, 3)))
-        self.tempo_scope = [130, 220]
+        self.tempo_scope = [180, 220]
 
 class ConfigOrnamentPiano(ConfigOrnament):
     def __init__(self):

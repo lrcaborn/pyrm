@@ -69,7 +69,31 @@ class PyRM:
             "TUNING": []
         }
         self.track = Track()
+        # tempo_length_map links a tempo tuple with a length factor tuple
+        # if a note is added within a tempo tuple's range, the note length
+        # will be adjusted by a factor between the high and low length factors
+        self.tempo_length_map = self.build_tempo_length_map(1, 39, 1.5, 1.116, 9)
+ 
+    def build_tempo_length_map(self, tempo_start, tempo_step, factor_start, factor_factor, count):
+        index = 1
+        tempo_length_map = []
 
+        tempos = [tempo_start, 
+                  tempo_start + tempo_step]
+        length_factors = [factor_start, 
+                          factor_start * factor_factor]
+
+        while index <= count:
+            index += 1
+            tempo_length_map.append([tempos, length_factors])
+
+            tempos = [tempos[1] + 1, 
+                      tempos[1] + tempo_step]
+            length_factors = [length_factors[1], 
+                              length_factors[1] * factor_factor]
+
+        return tempo_length_map
+            
     def _load_config(self, config):
         self.config = config
         config_info = "using " + config.name + " configuration"
@@ -285,36 +309,35 @@ class PyRM:
                                     "Adding notes from record_phrase and resetting")
                     self.track.recorded_phrases.append(self.recorded_phrase)
                     self.record_phrase = self.config.phrase_record_chance.random()
-                    print("added phrase. current phrase count: " + str(len(self.track.recorded_phrases)))
             else:
                 self.record_phrase = self.config.phrase_record_chance.random()
                 
-            note_start_time = self.calculate_note_start_time(note_start_time, note_length)
+            note_start_time = self.calculate_note_start_time(note_start_time)
 
             self.replay_phrase = self.config.phrase_replay_chance.random()
             if (self.replay_phrase and len(self.track.recorded_phrases) > 0):
                 self.record_phrase = False # override recording so that we don't re-record recorded phrases.
                 phrase = random.choice(self.track.recorded_phrases)
-                print("\nNEW PHRASE CHOSEN from list with " + str(len(self.track.recorded_phrases)) + " items - ", end='', flush=True)
-                print("chords in phrase: " + str(len(phrase.chords)), end='', flush=True)
 
                 for chord in phrase.chords.values():
-                    #print("length of the chord: " + str(len(chord)))
                     note_length = chord[0].length
                     for note in chord:
-                        #print("note: " + str(note))
                         self.add_note(note_start_time, note)
-                    note_start_time = self.calculate_note_start_time(note_start_time, note_length)
+                    note_start_time = self.calculate_note_start_time(note_start_time)
 
-    def calculate_note_start_time(self, note_start_time, note_length):
-        try:
-            start_time_factor = self._get_random(self.config.start_time_factors)
-        except AttributeError:
+    def calculate_note_start_time(self, note_start_time):
+        # if we can't find the tempo for the current note_start_time,
+        # go with the next earliest one that's stored.
+        tempo = self.track.tempos[note_start_time] if note_start_time in self.track.tempos else self.track.tempos[min(self.track.tempos.keys(), key=lambda k: abs(k-note_start_time))]
+        length_factors = [t[1] for t in self.tempo_length_map if t[0][0] <= tempo and t[0][1] >= tempo]
+        start_time_factor = self._get_random(length_factors[0])
+        if start_time_factor == 0:
             start_time_factor = 1
 
-        # determine next note_start_time AFTER adding the first note
+        # determine next note_start_time AFTER adding the first note to the track
         # so that we always start the track with the first note @ 0
-        note_start_time = note_start_time + int(note_length / start_time_factor)
+        note_start_time = note_start_time 
+                          + int(self.config.note_config.ticks_per_quarternote / start_time_factor)
 
         if note_start_time < 0:
             note_start_time *= -1
@@ -397,17 +420,19 @@ class PyRM:
                         if (args[0][0] == args[0][1]):
                             return args[0][0]
                         else:
-                            num = random.randrange(args[0][0], args[0][1])
-                            #print("returning " + str(num) + " which is between " + str(args[0][0]) + " and " + str(args[0][1]))
+                            #only call randrange if we're dealing with ints
+                            if (isinstance(args[0][0], int) and isinstance(args[0][1], int)):
+                                num = random.randrange(args[0][0], args[0][1])
+                            else:
+                                num = random.uniform(args[0][0], args[0][1])
                             return num
                     else:
                         return args[0][random.randrange(len(args[0]))]
                 else:
                     if ((isinstance(args[0], tuple))):
-                        rnd = random.randrange(len(args[0]))
-                        return args[0][rnd]
+                        return args[0][random.randrange(len(args[0]))]
                     else:
-                        raise TypeError("first arg must be a list or int. right now it's:" + str(type(args[0])))
+                        raise TypeError("first arg must be a list, tuple, or int. right now it's:" + str(type(args[0])))
         else:
             raise TypeError("first arg must be a list or int. right now it's not set to anything.")
 
