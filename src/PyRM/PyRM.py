@@ -336,8 +336,7 @@ class PyRM:
 
         # determine next note_start_time AFTER adding the first note to the track
         # so that we always start the track with the first note @ 0
-        note_start_time = note_start_time 
-                          + int(self.config.note_config.ticks_per_quarternote / start_time_factor)
+        note_start_time = note_start_time + int(self.config.note_config.ticks_per_quarternote / start_time_factor)
 
         if note_start_time < 0:
             note_start_time *= -1

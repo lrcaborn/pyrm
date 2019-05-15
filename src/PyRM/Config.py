@@ -208,7 +208,7 @@ class ConfigOrnament(ConfigBase):
     def __init__(self):
         super().__init__()
         self.name = "Ornament"
-        self.note_config.count_scope = [100, 1000]
+        self.note_config.count_scope = [100, 200]
         self.note_config.length_scope = [self.note_config.ticks_per_quarternote/4, self.note_config.ticks_per_quarternote]
         self.note_config.max_simultaneous = 4
         self.note_config.scope = [0, 127]
@@ -238,8 +238,8 @@ class ConfigDrumEzxJazz(ConfigDrum):
 
         self.phrase_count_scope = [3, 5]
         self.phrase_record_chance = lea.pmf({
-            True: 0.25,
-            False: 0.75
+            True: 0.75,
+            False: 0.25
         })
         self.phrase_replay_chance = lea.pmf({
             True: 0.25,
@@ -283,13 +283,13 @@ class ConfigDrumEzxJazzFast(ConfigDrumEzxJazz):
         self.name = "EzxJazzFast"
         self.note_config.chooser = lea.pmf({
             Category.CRASH.value: 0,
-            Category.HAT.value: 0.2,
-            Category.KICK.value: 0.35,
-            Category.RIDE.value: 0,
-            Category.SNARE.value: 0.35,
-            Category.TOM.value: 0.1
+            Category.HAT.value: 0.1,
+            Category.KICK.value: 0.4,
+            Category.RIDE.value: 0.1,
+            Category.SNARE.value: 0.25,
+            Category.TOM.value: 0.15
         })
-        self.note_config.count_scope = [500, 1000]
+        self.note_config.count_scope = [2000, 2000]
         self.note_config.length_scope = [self.note_config.ticks_per_quarternote*2, 
                                          self.note_config.ticks_per_quarternote*4]
         self.note_config.start_time_factors = (tuple(range(-1, 0)) 
@@ -297,14 +297,8 @@ class ConfigDrumEzxJazzFast(ConfigDrumEzxJazz):
         self.tempo_scope = [180, 220]
 
 class ConfigOrnamentPiano(ConfigOrnament):
-    def __init__(self):
-        class Category(Enum):
-            LOW = "Low"
-            HIGH = "High"
-            
-            def __str__(self):
-                return self.name
-            
+    def __init__(self):            
+        super().__init__()
         self.name = "OrnamentPiano"
         self.note_config.scope = [21, 109]
         self.note_config.categories = {
@@ -391,7 +385,7 @@ class ConfigPadPiano(ConfigPiano):
 
         self.tempo_scope = [150, 200]
 
-class ConfigPianoLongChords(ConfigBase):
+class ConfigPianoLongChords(ConfigPiano):
     def __init__(self):
         super().__init__()
 
@@ -402,7 +396,7 @@ class ConfigPianoLongChords(ConfigBase):
             Category.MIDDLE.value: 0.99,
             Category.HIGH.value: 0.005,
         })
-        self.note_config.count_scope = [250, 500]
+        self.note_config.count_scope = [1000, 1000]
         self.note_config.length_scope = [self.note_config.ticks_per_quarternote/2, 
                                          self.note_config.ticks_per_quarternote*4]
         self.note_config.max_simultaneous = 3

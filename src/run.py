@@ -16,10 +16,10 @@ for i in range(file_count):
     #config = Config.ConfigPianoLongChords()
     #config = Config.ConfigDrumEzxJazzSlow()
     #config = Config.ConfigDrumEzxJazzMid()
-    config = Config.ConfigDrumEzxJazzFast()
+    #config = Config.ConfigDrumEzxJazzFast()
     #config = Config.ConfigCompPiano()
     #config = Config.ConfigPadPiano()
-
+    config = Config.ConfigOrnamentPiano()
     pyrm = PyRM.PyRM(config)
     pyrm.build_track()
   
