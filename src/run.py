@@ -15,9 +15,12 @@ file_count = int(results.file_count) or 5
 for i in range(file_count):
     improv_config = Config.ImprovConfig()
     #improv_config.track_configs = [Config.DrumEzxJazz()]
+    compPiano = Config.CompPiano()
+    improv_config.track_configs = [compPiano, compPiano]
     #improv_config.track_configs = [Config.DrumEzxJazz()]
     #improv_config.track_configs = [Config.DrumEzxJazz(), Config.PadPiano()]
-    improv_config.track_configs = [Config.DrumEzxJazz(), Config.CompPiano(), Config.OrnamentPiano()]
+    #improv_config.track_configs = [Config.DrumEzxJazz(), Config.CompPiano(), Config.Vibes()]
+    #improv_config.track_configs = [Config.PianoLongChords(), Config.Vibes()]
     pyrm = PyRM.PyRM(improv_config)
     pyrm.build_tracks()
     pyrm.convert_tracks_to_midi_objects()

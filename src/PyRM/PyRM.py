@@ -63,7 +63,7 @@ class Phrase:
         return str(self.chords)
 
 class Track:
-    def __init__(self, config, tempo_length_map):
+    def __init__(self, config):
         self.config = config
 
         # do we always want it to start on 0?
@@ -81,12 +81,9 @@ class Track:
         # for certain phrases. Perhaps longer ones.
         self.recorded_phrases = list()
 
-        self.tempo_length_map = tempo_length_map
-
         # tempos is just key/value. 
         # Key = start time and value is the tempo
         self.tempos = dict()
-
 
     def import_json(self, filename):
         with open(filename, 'r') as f:
@@ -163,10 +160,8 @@ class Track:
         #                        str(len(self.categories)) + " categories created")
         
         use_tempo_change = self.config.tempo.scope[0] != self.config.tempo.scope[1]
-
         if use_tempo_change:
             self.tempos[self.note_start_time] = get_random(self.config.tempo.scope)
-            #print("initial tempo: " + str(self.tempos[note_start_time]))
         else:
             self.tempos[self.note_start_time] = self.config.tempo.scope[0]
         
@@ -188,8 +183,6 @@ class Track:
                 tempo_change_chooser = self.config.tempo.change_chooser.random()
                 if tempo_change_chooser:
                     self.tempos[self.note_start_time] = get_random(self.config.tempo.scope)
-                    #print("changing tempo to: " + str(self.tempos[note_start_time]) + " scope: " + str(self.config.tempo.scope))
-
                     #logger.log_debug("TEMPO", 
                     #                    str(track_number) + "    " + 
                     #                    str(note_start_time) + "    " + 
@@ -302,14 +295,17 @@ class Track:
         # if we can't find the tempo for the current note_start_time,
         # go with the next earliest one that's stored.
         tempo = self.tempos[self.note_start_time] if self.note_start_time in self.tempos else self.tempos[min(self.tempos.keys(), key=lambda k: abs(k-self.note_start_time))]
-        length_factors = [t[1] for t in self.tempo_length_map if t[0][0] <= tempo and t[0][1] >= tempo]
+        tempo_length_map_name = self.config.note.length_map_chooser.random()
+        tempo_length_map = self.config.note.length_maps[tempo_length_map_name]
+
+        length_factors = [t[1] for t in tempo_length_map if t[0][0] <= tempo and t[0][1] >= tempo]
         start_time_factor = get_random(length_factors[0])
         if start_time_factor == 0:
             start_time_factor = 1
 
         # determine next note_start_time AFTER adding the first note to the track
         # so that we always start the track with the first note @ 0
-        self.note_start_time = self.note_start_time + int(self.config.note.ticks_per_quarternote / start_time_factor)
+        self.note_start_time = self.note_start_time + int(self.config.note.ticks_per_quarternote * start_time_factor)
 
         if self.note_start_time < 0:
             self.note_start_time *= -1
@@ -330,7 +326,6 @@ class Track:
     def write_track(self):
         print(self.__repr__)
 
-
     #def __repr__(self):
     #    return jsonpickle.encode(self)
     #    #return json.dumps(self, default=jsonDefault, indent=4)
@@ -342,11 +337,6 @@ class PyRM:
         self.currentTrack = None
         self.tracks = []
         self.midis = []
-
-        # tempo_length_map links a tempo tuple with a length factor tuple
-        # if a note is added within a tempo tuple's range, the note length
-        # will be adjusted by a factor between the high and low length factors
-        self.tempo_length_map = self.build_tempo_length_map(1, 39, 1.5, 1.116, 9)
 
         #self._load_config(config)            
         #self.track = Track()
@@ -363,7 +353,7 @@ class PyRM:
             track_config.ticks_per_quarternote = self.config.ticks_per_quarternote
             track_config.tempo = self.config.tempo
 
-            track = Track(track_config, self.tempo_length_map)
+            track = Track(track_config)
             track.note_count = get_random(track.config.note.count_scope)
             #logger.log_debug("GENERAL", "Will be adding " + str(track.note_count) + " notes")
             self.tracks.append(track)
@@ -394,36 +384,13 @@ class PyRM:
 
             # add tempos
             for start_time in track.tempos:
-                #print("start_time: " + str(start_time) + " tempo: " + str(self.track.tempos[start_time]))
                 self.midis[index].addTempo(int(track_number), int(start_time), int(track.tempos[start_time]))
 
             # add notes
             for start_time in track.notes:
-                #print("start_time: " + str(start_time))
                 for note in track.notes[start_time]:
                     self.midis[index].addNote(int(track_number), int(channel), int(note.pitch), int(start_time), int(note.length), int(note.volume))
-                    #print("    length: " + str(note.length) + " pitch: " + str(note.pitch) + " volume: " + str(note.volume))
- 
-    def build_tempo_length_map(self, tempo_start, tempo_step, factor_start, factor_factor, count):
-        index = 1
-        tempo_length_map = []
-
-        tempos = [tempo_start, 
-                  tempo_start + tempo_step]
-        length_factors = [factor_start, 
-                          factor_start * factor_factor]
-
-        while index <= count:
-            index += 1
-            tempo_length_map.append([tempos, length_factors])
-
-            tempos = [tempos[1] + 1, 
-                      tempos[1] + tempo_step]
-            length_factors = [length_factors[1], 
-                              length_factors[1] * factor_factor]
-
-        return tempo_length_map
-            
+             
     def _load_config(self, config):
         self.config = config
         #config_info = "using " + config.name + " configuration"
@@ -457,13 +424,9 @@ class PyRM:
     def build_tracks(self):
         for track in self.tracks:
             track.build_track()
-            print("tracks note_start_time: " + str(track.note_start_time))
 
         # find the longest track
-        max_note_start_time = max(self.tracks, key=attrgetter('note_start_time')).note_start_time
-        print("max_note_start_time: " + str(max_note_start_time))
-
-        
+        max_note_start_time = max(self.tracks, key=attrgetter('note_start_time')).note_start_time        
 
     #def write_stats(self):
         #logger.log_debug("GENERAL", self.config.getStats())
@@ -519,4 +482,3 @@ def lesser_of(first, second):
         return first
     else:
         return second
-
