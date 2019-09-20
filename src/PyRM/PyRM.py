@@ -118,28 +118,27 @@ class Track:
 
     def _generate_pitch(self, isPrimaryNote):
         try:
-            category = self.config.note.chooser.random()
             if isPrimaryNote:
-                range = self.config.note.categories[category]
-                pitch = get_random(range)
-                #logger.log_debug("PITCH", 
+                category = self.config.note.chooser.random()
+                scopes = self.config.note.categories[category]
+                pitch = get_random_from_list(scopes)
+                #print("PITCH", 
                 #                    "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + 
                 #                    " from category: " + str(category) + 
-                #                    " with range: " + str(range))
+                #                    " with range: " + str(scopes))
             else:
-                range = self.config.note.scope
-                pitch = get_random(range)
-                #logger.log_debug("PITCH", 
+                scopes = list(range(self.config.note.scope[0], self.config.note.scope[1]))
+                pitch = get_random_from_list(scopes)
+                #print("PITCH", 
                 #                    "HAVE CHOOSER - NONPRIMARY pitch: " + str(pitch) + 
                 #                    " from category: " + str(category) + 
-                #                    " with range: " + str(range))
+                #                    " with range: " + str(scopes))
         except AttributeError:
-            range = self.config.note.scope
-            pitch = get_random(range)
-            pitch = get_random(range)
-            #logger.log_debug("PITCH", 
+            scopes = list(range(self.config.note.scope[0], self.config.note.scope[1]))
+            pitch = get_random_from_list(range)
+            #print("PITCH", 
             #                    "NO CHOOSER - pitch: " + str(pitch) + 
-            #                    " from range: " + str(range))
+            #                    " from range: " + str(scopes))
 
         return pitch
 
@@ -227,9 +226,7 @@ class Track:
                 
                 if self.config.note.simultaneous_chance.random() == True:
                     #logger.log_debug("PITCH", "generating simultaneous note")
-                
-                    try_to_generate_simultaneous_note = True
-                    
+                                    
                     # getting a pitch for a simultaneous note doesn't need to be limited by the category
                     pitch = self._generate_pitch(False)
 
@@ -239,19 +236,39 @@ class Track:
                         #                    "SIM NOTE failure: " + str(pitch) + 
                         #                    " already used: " 
                         #                    + str(simultaneous_pitches))
-                        break
-                    elif (pitch in self.config.note.categories[category]):
-                        if (self.config.note.allow_simultaneous_from_same_category == False):
+                        continue
+
+                    '''
+                        same        allow   force   save
+                        category	s_f_s_c s_f_s_c	note
+                        0	        0	    0	    1
+                        0	        0	    1	    0
+                        0	        1	    0	    1
+                        0	        1	    1	    0
+                        1	        0	    0	    0
+                        1	        0	    1	    0
+                        1	        1	    0	    1
+                        1	        1	    1	    1
+
+                    '''
+                    if (pitch in self.config.note.categories[category]):
+                        if (self.config.note.allow_simultaneous_from_same_category == True):
+                            note_length = get_random(self.config.note.length_scope)
+                            self.add_note(self._create_note(note_length, pitch, volume))
+                        else:
                             # we don't want to add notes that are unpairable with the first note
                             #logger.log_debug("PITCH", 
                             #                "SIM NOTE failure: pitch " + str(pitch) + 
                             #                " is in the current category " + 
                             #                str(self.config.note.categories[category]))
-                            continue
+                            break
                     else:
-                        note_length = get_random(self.config.note.length_scope)
-                        self.add_note(self._create_note(note_length, pitch, volume))
-
+                        if (self.config.note.allow_simultaneous_from_same_category == True and
+                            self.config.note.force_simultaneous_from_same_category == False):
+                            note_length = get_random(self.config.note.length_scope)
+                            self.add_note(self._create_note(note_length, pitch, volume))
+                        else:
+                            break
                         #logger.log_debug("PITCH", 
                         #                    "SIM NOTE: " + str(category) 
                         #                    + " " + str(pitch) 
@@ -296,6 +313,7 @@ class Track:
         # go with the next earliest one that's stored.
         tempo = self.tempos[self.note_start_time] if self.note_start_time in self.tempos else self.tempos[min(self.tempos.keys(), key=lambda k: abs(k-self.note_start_time))]
         tempo_length_map_name = self.config.note.length_map_chooser.random()
+        #print("tempo_length_map_name: " + tempo_length_map_name + " " + str(self.note_start_time))
         tempo_length_map = self.config.note.length_maps[tempo_length_map_name]
 
         length_factors = [t[1] for t in tempo_length_map if t[0][0] <= tempo and t[0][1] >= tempo]
@@ -445,6 +463,9 @@ class PyRM:
 ##################
 # STATIC METHODS #
 ##################
+def get_random_from_list(list):
+    return list[random.randrange(len(list))]
+    
 def get_random(*args):
     if (len(args) == 1):
         if (isinstance(args[0], int)):
