@@ -5,16 +5,17 @@ import argparse
 from PyRM import PyRM, Config
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--config_file", "-f", help = "configuration to use", type = str, dest = "config_file")
-parser.add_argument("--count", "-c", help = "number of files to create", type = str, dest = "file_count")
+parser.add_argument("--config_file", "-f", help="configuration to use", type=str, dest="config_file")
+parser.add_argument("--count", "-c", default=1, help="number of files to create", type=int, dest="file_count")
 results = parser.parse_args()
 
 config_file = results.config_file
-file_count = int(results.file_count) or 5
+file_count = int(results.file_count)
 
 for i in range(file_count):
   improv_config = Config.ImprovConfig()
   improv_config.track_configs = [Config.DrumEzxJazz()]
+  #improv_config.track_configs = [Config.DrumVintage1963()]
   #improv_config.track_configs = [Config.PianoLongChords()]
   #improv_config.track_configs = [Config.OrnamentPiano()]
   #improv_config.track_configs = [Config.CompPiano()]

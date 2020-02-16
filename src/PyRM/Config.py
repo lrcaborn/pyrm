@@ -12,8 +12,8 @@ class ImprovConfig:
 
     self.tempo = TempoConfig()
     self.tempo.scope_change_chooser = lea.pmf({
-      False: 0.9,
-      True: 0.1
+      False: 0.5,
+      True: 0.5
     })
     self.tempo.change_chooser = lea.pmf({
       False: 0.5,
@@ -21,9 +21,9 @@ class ImprovConfig:
     })
     self.tempo.scope_chooser = lea.pmf(
     {
-      0: 0.15,
-      1: 0.25,
-      2: 0.6,
+      0: 0.35,
+      1: 0.6,
+      2: 0.05,
       3: 0,
       4: 0
     })
@@ -35,27 +35,35 @@ class ImprovConfig:
       (250, 300)
     )
 
+    #self.tempo.scope_chooser = lea.pmf(
+    #{
+    #  0: 1
+    #})
+    #self.tempo.scopes = [
+    #  (50, 110)
+    #]
+    
 class MapDrumSlow():
   def __init__(self):
     self.name = "Drum Slow"
     self.length_maps = {
       "Name0": build_tempo_length_map((1, 301), 10, (0.9, 1.1)),
-      "Name1": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
-      "Name2": build_tempo_length_map((1, 301), 5, (0.0625, 0.125)),
-      "Name3": build_tempo_length_map((1, 301), 10, (1, 2))
+      "Name1": build_tempo_length_map((1, 301), 9, (0.25, 0.5)),
+      "Name2": build_tempo_length_map((1, 301), 5, (0.5, 0.25)),
+      "Name3": build_tempo_length_map((1, 301), 10, (0.0625, 0.25))
      }
      
     self.length_map_chooser = lea.pmf({
-      "Name0": 0.1,
-      "Name1": 0.4,
-      "Name2": 0.4,
-      "Name3": 0.1
+      "Name0": 0.2,
+      "Name1": 0.3,
+      "Name2": 0.3,
+      "Name3": 0.2
     })
     
     self.space = SpaceConfig()
     self.space.chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0,
+      False: 1
     })
     # seconds, so will need to calculate
     # tempo = 180bpm
@@ -188,8 +196,8 @@ class TempoConfig:
       True: 0.85
     })
     self.change_chooser = lea.pmf({
-      False: 0.25,
-      True: 0.75
+      False: 1,
+      True: 0
     })
     self.scope_chooser = lea.pmf(
     {
@@ -206,6 +214,33 @@ class TempoConfig:
       (200, 250),
       (250, 300)
     )
+
+class VolumeConfig:
+  def __init__(self):
+    self.scope_change_chooser = lea.pmf({
+      False: 0.75,
+      True: 0.25
+    })
+    self.change_chooser = lea.pmf({
+      False: 0.75,
+      True: 0.25
+    })
+    self.scope_chooser = lea.pmf(
+    {
+      0: 0.05,
+      1: 0.20,
+      2: 0.40,
+      3: 0.20,
+      4: 0.15
+    })
+    self.scopes = (
+      (0, 32),
+      (32, 64),
+      (64, 96),
+      (96, 106),
+      (106, 127)
+    )
+
 
 # 16 Bully Hats Open4
 # 17-20
@@ -253,134 +288,71 @@ class TempoConfig:
 # 64 Bully Hats Open 0
 # 65 Bully Hats Sequenced Hits
   
-class DrumBullySlow():
+class DrumBully():
   def __init__(self):
-    self.name = "BullyDrumSlow"
+    self.name = "BullyDrum"
     self.debug_log = False
 
     self.note = NoteConfig()
     self.note.allow_simultaneous_from_same_category = False
+    self.note.force_simultaneous_from_same_category = False
     self.note.categories = {
       NoteCategory.HAT.value: [16, 21, 22, 23, 24, 25, 26, 42, 44, 46, 60, 62, 63, 64, 65], 
-      NoteCategory.CYMBAL_CRASHES.value: [27, 28, 29, 30, 31, 32, 49, 52, 55, 57, 59], 
+      NoteCategory.CRASH.value: [27, 28, 29, 30, 31, 32, 49, 52, 55, 57, 59], 
       NoteCategory.KICK.value: [36], 
       NoteCategory.SNARE.value: [37, 38, 39, 40], 
       NoteCategory.TOM.value: [41, 43, 45, 47, 48, 50], 
-      NoteCategory.RIDE_CYMBAL.value: [51, 53], 
+      NoteCategory.RIDE.value: [51, 53], 
       NoteCategory.COWBELL.value: [54, 56]
     }
     self.note.chooser = lea.pmf({
-      NoteCategory.COWBELL.value: 0.05,
-      NoteCategory.CYMBAL_CRASHES.value: 0,
+      NoteCategory.COWBELL.value: 0,
+      NoteCategory.CRASH.value: 0,
       NoteCategory.HAT.value: 0.15,
       NoteCategory.KICK.value: 0.30,
-      NoteCategory.RIDE_CYMBAL.value: 0.15,
-      NoteCategory.SNARE.value: 0.25,
-      NoteCategory.TOM.value: 0.10
-    })
-    self.note.count_scope = [100, 100]
-    self.note.forbidden_notes = {17, 18, 19, 20, 33, 34, 35, 58, 61}
-    self.note.length_scope = [self.note.ticks_per_quarternote/8, self.note.ticks_per_quarternote]
-    self.note.max_simultaneous = 3
-    self.note.scope = list(set(range(16, 65)) - self.note.forbidden_notes)
-    self.note.simultaneous_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
-    })
-    self.note.start_time_factors = ()
-    self.note.ticks_per_quarternote = 480 # can be up to 960
-    
-    self.phrase = PhraseConfig()
-    self.phrase.count_scope = [3, 10]
-    self.phrase.record_chance = lea.pmf({
-      True: 0,
-      False: 1
-    })
-    self.phrase.replay_chance = lea.pmf({
-      True: 0,
-      False: 1
-    })
-    
-    self.tempo = TempoConfig()
-    self.tempo.change_chooser = lea.pmf({
-      True: 0.5,
-      False: 0.5
-    })
-    self.scope_chooser = lea.pmf(
-    {
-      0: 1
-    })
-    self.scopes = (
-      (40, 70)
-    )
-
-
-    self.use_randomized_tuning = False
-    self.volume_scope = [90, 127]
-
-class DrumBullyFast():
-  def __init__(self):
-    self.name = "BullyDrumFast"
-    self.debug_log = False
-
-    self.note = NoteConfig()
-    self.note.allow_simultaneous_from_same_category = False
-    self.note.categories = {
-      NoteCategory.HAT.value: [16, 21, 22, 23, 24, 25, 26, 42, 44, 46, 60, 62, 63, 64, 65], 
-      NoteCategory.CYMBAL_CRASHES.value: [27, 28, 29, 30, 31, 32, 49, 52, 55, 57, 59], 
-      NoteCategory.KICK.value: [36], 
-      NoteCategory.SNARE.value: [37, 38, 39, 40], 
-      NoteCategory.TOM.value: [41, 43, 45, 47, 48, 50], 
-      NoteCategory.RIDE_CYMBAL.value: [51, 53], 
-      NoteCategory.COWBELL.value: [54, 56]
-    }
-    self.note.chooser = lea.pmf({
-      NoteCategory.COWBELL.value: 0.05,
-      NoteCategory.CYMBAL_CRASHES.value: 0,
-      NoteCategory.HAT.value: 0.15,
-      NoteCategory.KICK.value: 0.30,
-      NoteCategory.RIDE_CYMBAL.value: 0.15,
+      NoteCategory.RIDE.value: 0.15,
       NoteCategory.SNARE.value: 0.25,
       NoteCategory.TOM.value: 0.10
     })
     self.note.count_scope = [1000, 1500]
     self.note.forbidden_notes = {17, 18, 19, 20, 33, 34, 35, 58, 61}
-    self.note.length_scope = [self.note.ticks_per_quarternote/2, self.note.ticks_per_quarternote]
+    self.note.length_scope = [self.note.ticks_per_quarternote*16, 
+                     self.note.ticks_per_quarternote*32]
+			
+    #map = MapDrumFast()
+    map = MapDrumSlow()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
+
     self.note.max_simultaneous = 3
-    self.note.scope = list(set(range(16, 65)) - self.note.forbidden_notes)
+	
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
+    self.note.scope = list(set(range(1, 128)) - self.note.forbidden_notes)
+
     self.note.simultaneous_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0.5,
+      False: 0.5
     })
-    self.note.start_time_factors = ()
+
     self.note.ticks_per_quarternote = 480 # can be up to 960
     
     self.phrase = PhraseConfig()
     self.phrase.count_scope = [3, 10]
     self.phrase.record_chance = lea.pmf({
-      True: 0,
-      False: 1
+      True: 0.2,
+      False: 0.8
     })
     self.phrase.replay_chance = lea.pmf({
-      True: 0,
-      False: 1
+      True: 0.6,
+      False: 0.4
     })
-    
-    self.tempo = TempoConfig()
-    self.tempo.change_chooser = lea.pmf({
-      True: 0.5,
-      False: 0.5
-    })
-    self.scope_chooser = lea.pmf(
-    {
-      0: 1
-    })
-    self.scopes = (
-      (150, 180)
-    )
 
+    self.space = map.space
+    
     self.use_randomized_tuning = False
-    self.volume_scope = [90, 127]
+    self.volume = VolumeConfig()
 
 class Drum808():
   def __init__(self):
@@ -480,6 +452,7 @@ class DrumEzxJazz():
     self.note = NoteConfig()
     self.note.allow_simultaneous_from_same_category = False
     self.note.force_simultaneous_from_same_category = False
+
     self.note.categories = {
       NoteCategory.HAT.value: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 42, 44, 46, 60, 61, 62, 63, 64, 65, 119, 120, 121, 122, 123, 124], 
       NoteCategory.KICK.value: [34], 
@@ -488,26 +461,72 @@ class DrumEzxJazz():
       NoteCategory.CRASH.value: [27, 28, 29, 49, 54, 55, 83, 94, 95], 
       NoteCategory.TOM.value: [4, 5, 41, 43, 45, 47, 48, 50, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82]
     }
-    self.note.chooser = lea.pmf({
-      NoteCategory.CRASH.value: 0.05,
-      NoteCategory.HAT.value: 0.05,
-      NoteCategory.KICK.value: 0.3,
-      NoteCategory.RIDE.value: 0.15,
-      NoteCategory.SNARE.value: 0.3,
-      NoteCategory.TOM.value: 0.15
+
+    self.note.formats = {
+      "Name0":
+              lea.pmf({
+                NoteCategory.CRASH.value: 0.05,
+                NoteCategory.HAT.value: 0.05,
+                NoteCategory.KICK.value: 0.3,
+                NoteCategory.RIDE.value: 0.15,
+                NoteCategory.SNARE.value: 0.3,
+                NoteCategory.TOM.value: 0.15
+              }),
+      "Name1":
+        lea.pmf({
+          NoteCategory.CRASH.value: 0.5,
+          NoteCategory.SNARE.value: 0.5
+        }),
+      "Name2":
+        lea.pmf({
+          NoteCategory.CRASH.value: 0.5,
+          NoteCategory.TOM.value: 0.5
+        }),
+      "Name3":
+        lea.pmf({
+          NoteCategory.HAT.value: 0.5,
+          NoteCategory.SNARE.value: 0.5
+        }),
+      "Name4":
+        lea.pmf({
+          NoteCategory.HAT.value: 0.5,
+          NoteCategory.TOM.value: 0.5
+        }),
+      "Name5":
+        lea.pmf({
+          NoteCategory.HAT.value: 0.15,
+          NoteCategory.KICK.value: 0.35,
+          NoteCategory.SNARE.value: 0.35,
+          NoteCategory.TOM.value: 0.15
+        })
+    }
+
+    self.note.format_change_chooser = lea.pmf({
+      False: 0.25,
+      True: 0.75
     })
 
-    self.note.count_scope = [100, 250]
+    self.note.format_chooser = lea.pmf({
+      "Name0": 0.15,
+      "Name1": 0.15,
+      "Name2": 0.15,
+      "Name3": 0.15,
+      "Name4": 0.15,
+      "Name5": 0.25
+     })
+
+    self.note.count_scope = [50, 500]
 
     # 37 is the only sidestick in brush kit
     # add 127, 71, 67 for full kits
-    self.note.forbidden_notes = {1, 2, 3, 4, 5, 35, 36, 37, 56, 67, 71, 76, 127} 
+    self.note.forbidden_notes = {1, 2, 3, 4, 5, 35, 36, 37, 56, 67, 71, 76} 
     
     # this is only really useful for making sure that cymbals left ringing don't cut out prematurely
     self.note.length_scope = [self.note.ticks_per_quarternote*16, 
                      self.note.ticks_per_quarternote*32]
 
-    map = MapDrumFast()
+    #map = MapDrumFast()
+    map = MapDrumSlow()
 
     self.note.length_maps = map.length_maps
     self.note.length_map_chooser = map.length_map_chooser
@@ -522,8 +541,8 @@ class DrumEzxJazz():
     #print("full scope: " + str(self.note.scope))
     
     self.note.simultaneous_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0.5,
+      False: 0.5
     })
     #self.simultaneous_note_category_behavior = SimultaneousNoteCategoryBehavior.DIFFERENT
     self.note.ticks_per_quarternote = 480 # can be up to 960
@@ -531,18 +550,97 @@ class DrumEzxJazz():
     self.phrase = PhraseConfig()
     self.phrase.count_scope = [3, 10]
     self.phrase.record_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0.5,
+      False: 0.5
     })
     self.phrase.replay_chance = lea.pmf({
-      True: 0.35,
-      False: 0.65
+      True: 0.5,
+      False: 0.5
     })
     
     self.space = map.space
 
     self.use_randomized_tuning = False
-    self.volume_scope = [50, 110]
+
+    self.volume = VolumeConfig()
+
+class DrumVintage1963():
+  def __init__(self):
+    self.name = "Vintage1963"
+    self.debug_log = False
+
+    self.note = NoteConfig()
+    self.note.allow_simultaneous_from_same_category = False
+    self.note.force_simultaneous_from_same_category = False
+    self.note.categories = {
+      NoteCategory.HAT.value: [42, 44, 45, 46, 52, 54, 55, 58, 59, 60, 61, 62, 63, 64], 
+      # 36 is felt beater, 41 is plastic
+      NoteCategory.KICK.value: [36], 
+      NoteCategory.RIDE.value: [50, 51, 53], 
+      # 38 snare
+      # 39 snare edge
+      # 40 rimshot
+      NoteCategory.SNARE.value: [38, 39, 40],  
+      NoteCategory.CRASH.value: [48, 49, 56, 57], 
+      NoteCategory.TOM.value: [43, 47]
+    }
+    self.note.chooser = lea.pmf({
+      NoteCategory.CRASH.value: 0.05,
+      NoteCategory.HAT.value: 0.15,
+      NoteCategory.KICK.value: 0.3,
+      NoteCategory.RIDE.value: 0.15,
+      NoteCategory.SNARE.value: 0.2,
+      NoteCategory.TOM.value: 0.15
+    })
+
+    self.note.count_scope = [25, 50]
+
+    # 37 is sidestick
+    self.note.forbidden_notes = {37} 
+    
+    # this is only really useful for making sure that cymbals left ringing don't cut out prematurely
+    self.note.length_scope = [self.note.ticks_per_quarternote*16, 
+                     self.note.ticks_per_quarternote*32]
+
+    map = MapDrumFast()
+    #map = MapDrumSlow()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
+
+    self.note.max_simultaneous = 3
+
+    # remove forbidden notes from all categories and the full note scope
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
+      #print(category + ": " + str(self.note.categories[category]))
+    self.note.scope = list(set(range(1, 128)) - self.note.forbidden_notes)
+    #print("full scope: " + str(self.note.scope))
+    
+    self.note.simultaneous_chance = lea.pmf({
+      True: 0.5,
+      False: 0.5
+    })
+    #self.simultaneous_note_category_behavior = SimultaneousNoteCategoryBehavior.DIFFERENT
+    self.note.ticks_per_quarternote = 480 # can be up to 960
+    
+    self.phrase = PhraseConfig()
+    self.phrase.count_scope = [3, 10]
+    self.phrase.record_chance = lea.pmf({
+      True: 0.5,
+      False: 0.5
+    })
+    self.phrase.replay_chance = lea.pmf({
+      True: 0.5,
+      False: 0.5
+    })
+    
+    self.space = map.space
+
+    self.use_randomized_tuning = False
+
+    self.volume = VolumeConfig()
+
 
 class OrnamentPiano():
   def __init__(self):
@@ -560,7 +658,7 @@ class OrnamentPiano():
       NoteCategory.LOW.value: 0.2,
       NoteCategory.HIGH.value: 0.8,
     })
-    self.note.count_scope = [100, 500]
+    self.note.count_scope = [10, 25]
     
     self.note.length_maps = {
       "Name0": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
@@ -571,17 +669,23 @@ class OrnamentPiano():
       "Name5": build_tempo_length_map((1, 301), 9, (0.125, 1.5))
      }
     self.note.length_map_chooser = lea.pmf({
-      "Name0": 0.05,
-      "Name1": 0.05,
-      "Name2" : 0.4,
-      "Name3": 0.05,
+      "Name0": 0.4,
+      "Name1": 0.3,
+      "Name2" : 0.1,
+      "Name3": 0.1,
       "Name4": 0.05,
-      "Name5": 0.4
+      "Name5": 0.05
     })
     
     self.note.forbidden_notes = []
     self.note.length_scope = [self.note.ticks_per_quarternote*8, 
                      self.note.ticks_per_quarternote*16]
+
+    map = MapDrumFast()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
+
     self.note.max_simultaneous = 4
     self.note.simultaneous_chance = lea.pmf({
       True: 0.25,
@@ -602,8 +706,8 @@ class OrnamentPiano():
 
     self.space = SpaceConfig()
     self.space.chance = lea.pmf({
-      True: 0.1,
-      False: 0.9
+      True: 0.5,
+      False: 0.5
     })
     # seconds, so will need to calculate
     # tempo = 180bpm
@@ -612,10 +716,10 @@ class OrnamentPiano():
     # 480 * 3 = 1440 ticks
     # 1440 * rand # between 5 and 10 (let's say 7)
     # total tick count for this silence == 1440 * 7 == 10080
-    self.space.scope = (2, 5)
+    self.space.scope = (1, 2)
 
     self.use_randomized_tuning = False
-    self.volume_scope = [80, 100]
+    self.volume = VolumeConfig()
 
 class CompPiano():
   def __init__(self):
@@ -794,7 +898,7 @@ class PianoLongChords():
       NoteCategory.MIDDLE.value: 0.8,
       NoteCategory.HIGH.value: 0.05,
     })
-    self.note.count_scope = [300, 300]
+    self.note.count_scope = [7, 10]
     self.note.forbidden_notes = []
     self.note.length_scope = [self.note.ticks_per_quarternote*4, 
                      self.note.ticks_per_quarternote*32]
@@ -818,18 +922,18 @@ class PianoLongChords():
     self.phrase = PhraseConfig()
     self.phrase.count_scope = [3, 8]
     self.phrase.record_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0,
+      False: 1
     })
     self.phrase.replay_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0,
+      False: 1
     })
 
     self.space = SpaceConfig()
     self.space.chance = lea.pmf({
-      True: 0.7,
-      False: 0.3
+      True: 0,
+      False: 1
     })
     # seconds, so will need to calculate
     # tempo = 180bpm
@@ -841,7 +945,7 @@ class PianoLongChords():
     self.space.scope = (2, 5)
 
     self.use_randomized_tuning = False
-    self.volume_scope = [90, 110]
+    self.volume = VolumeConfig()
 
 class PadSynth():
   def __init__(self):
@@ -849,7 +953,9 @@ class PadSynth():
     self.debug_log = False
 
     self.note = NoteConfig()
-    self.note.allow_simultaneous_from_same_category = False
+    self.note.allow_simultaneous_from_same_category = True
+    self.note.force_simultaneous_from_same_category = False
+    self.note.scope = [21, 109]
     self.note.categories = {
       NoteCategory.LOW.value: list(range(self.note.scope[0], 50)),
       NoteCategory.MIDDLE.value: list(range(51, 80)),
@@ -864,7 +970,6 @@ class PadSynth():
     self.note.forbidden_notes = []
     self.note.length_scope = [self.note.ticks_per_quarternote*2, self.note.ticks_per_quarternote*16]
     self.note.max_simultaneous = 5
-    self.note.scope = [21, 109]
     self.note.simultaneous_chance = lea.pmf({
       True: 0.90,
       False: 0.10
@@ -910,7 +1015,7 @@ class PadSynth():
     )
 
     self.use_randomized_tuning = False
-    self.volume_scope = [80, 100]
+    self.volume = VolumeConfig()
 
 class Vibes():
   def __init__(self):

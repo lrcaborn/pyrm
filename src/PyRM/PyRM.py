@@ -66,6 +66,8 @@ class Track:
   def __init__(self, config):
     self.config = config
 
+    self.format = None
+
     # do we always want it to start on 0?
     self.note_start_time = 0
 
@@ -84,6 +86,10 @@ class Track:
     # tempos is just key/value. 
     # Key = start time and value is the tempo
     self.tempos = dict()
+
+    # volumes is just key/value. 
+    # Key = start time and value is the volume
+    self.volumes = dict()
     
     self.note_debug = set()
 
@@ -121,32 +127,33 @@ class Track:
   def _generate_pitch(self, isPrimaryNote):
     try:
       if isPrimaryNote:
-        category = self.config.note.chooser.random()
+        if self.format is None or self.config.note.format_change_chooser.random():
+          self.format = self.config.note.format_chooser.random()
+          print("Format changed to: " + str(self.format))
+        category = self.config.note.formats[self.format].random()
         scopes = self.config.note.categories[category]
         pitch = get_random_from_list(scopes)
-        #print("PITCH", 
-        #          "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + 
-        #          " from category: " + str(category) + 
-        #          " with range: " + str(scopes))
+        print("PITCH", 
+                  "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + 
+                  " from category: " + str(category) + 
+                  " with range: " + str(scopes))
       else:
-        scopes = list(range(self.config.note.scope[0], self.config.note.scope[1]))
-        pitch = get_random_from_list(scopes)
-        #print("PITCH", 
-        #          "HAVE CHOOSER - NONPRIMARY pitch: " + str(pitch) + 
-        #          " from category: " + str(category) + 
-        #          " with range: " + str(scopes))
+        pitch = get_random_from_list(self.config.note.scope)
+        print("PITCH", 
+                  "HAVE CHOOSER - NONPRIMARY pitch: " + str(pitch) + 
+                  " built from self.config.note.scope: " + str(self.config.note.scope))
     except AttributeError:
-      scopes = list(range(self.config.note.scope[0], self.config.note.scope[1]))
-      pitch = get_random_from_list(range)
-      #print("PITCH", 
-      #          "NO CHOOSER - pitch: " + str(pitch) + 
-      #          " from range: " + str(scopes))
+      pitch = get_random_from_list(self.config.note.scope)
+      print("PITCH", 
+                "NO CHOOSER - pitch: " + str(pitch) + 
+                " from self.config.note.scope: " + str(self.config.note.scope))
 
     self.note_debug.add(pitch)
 
     return pitch
 
   def build_track(self):
+    print("self.config.note.format_change_chooser: " + str(self.config.note.format_change_chooser))
     channel = 0
     track_number = 0
 
@@ -157,13 +164,19 @@ class Track:
     # generates tuple of categories that will match up reasonably well 
     # with the probabilities specified when defining the chooser in 
     # the config
-    self.categories = self.config.note.chooser.random(self.note_count)
-    
+    #self.categories = self.config.note.chooser.random(self.note_count)
+
+    if self.format is None or self.config.note.format_change_chooser.random():
+      self.format = self.config.note.format_chooser.random()
+      print("Format changed to: " + str(self.format))
+
+    self.categories = self.config.note.formats[self.format].random(self.note_count)
+
     #logger.log_debug("GENERAL", 
     #            str(len(self.categories)) + " categories created")
-    
+
     scope_count = len(self.config.tempo.scopes)
-    use_tempo_change = scope_count > 1 or (scope_count == 1 and self.config.tempo.scopes[0] != self.config.tempo.scopes[1])
+    use_tempo_change = scope_count > 1 or (scope_count == 1 and self.config.tempo.scopes[0][0] != self.config.tempo.scopes[0][1])
     use_scope_change = use_tempo_change and scope_count > 1
 
     if use_tempo_change:
@@ -184,6 +197,21 @@ class Track:
 
     #logger.log_debug("PITCH", 
     #          "category  pitch  note_start_time  note_length  volume")
+
+    scope_count = len(self.config.volume.scopes)
+    use_volume_change = scope_count > 1 or (scope_count == 1 and self.config.volume.scopes[0][0] != self.config.volume.scopes[0][1])
+    use_volume_change = use_volume_change and scope_count > 1
+
+    if use_volume_change:
+      if use_scope_change:
+        volume_scope = self.config.volume.scopes[self.config.volume.scope_chooser.random()]
+      else:
+        volume_scope = self.config.volume.scopes[0]
+
+      volume = get_random(volume_scope)
+    else:
+      volume = volume_scope[0]
+
 
     for i,category in enumerate(self.categories):
     
@@ -206,9 +234,30 @@ class Track:
           #          str(track_number) + "  " + 
           #          str(note_start_time) + "  " + 
           #          str(track.tempos[note_start_time]))
-      #logger.log_debug("PITCH", "currently on category " + str(i))
     
-      volume = get_random(self.config.volume_scope)
+      #################
+      # VOLUME CHANGE #
+      #################
+      if use_volume_change:
+        if use_scope_change:
+          scope_change_chooser = self.config.volume.scope_change_chooser.random()
+          #print("scope_change_chooser: " + str(scope_change_chooser))
+          if scope_change_chooser:
+            volume_scope = self.config.volume.scopes[self.config.volume.scope_chooser.random()]
+
+        volume_change_chooser = self.config.volume.change_chooser.random()
+        
+        if volume_change_chooser:
+          volume = get_random(volume_scope)
+          #print("volume changed: " + str(self.volumes[self.note_start_time]))
+          #logger.log_debug("volume", 
+          #          str(track_number) + "  " + 
+          #          str(note_start_time) + "  " + 
+          #          str(track.volumes[note_start_time]))
+      #logger.log_debug("PITCH", "currently on category " + str(i))
+
+
+
       note_length = get_random(self.config.note.length_scope)
   
       pitch = self._generate_pitch(True)
@@ -249,13 +298,13 @@ class Track:
           # getting a pitch for a simultaneous note doesn't need to be limited by the category
           pitch = self._generate_pitch(False)
 
-          if pitch in simultaneous_pitches: 
+          while pitch in simultaneous_pitches: 
             # we don't want to add notes already used to the list of simultaneous pitches
             #logger.log_debug("PITCH", 
             #          "SIM NOTE failure: " + str(pitch) + 
             #          " already used: " 
             #          + str(simultaneous_pitches))
-            continue
+            pitch = self._generate_pitch(False)
 
           '''
             same    allow   force   save
@@ -271,29 +320,34 @@ class Track:
 
           '''
           if (pitch in self.config.note.categories[category]):
-            if (self.config.note.allow_simultaneous_from_same_category == True):
-              note_length = get_random(self.config.note.length_scope)
-              self.add_note(self._create_note(note_length, pitch, volume))
-            else:
-              # we don't want to add notes that are unpairable with the first note
-              #logger.log_debug("PITCH", 
-              #        "SIM NOTE failure: pitch " + str(pitch) + 
-              #        " is in the current category " + 
-              #        str(self.config.note.categories[category]))
-              break
+            if (self.config.note.allow_simultaneous_from_same_category == False):
+              # pitch is int he same catory and we're not allowed to use notes
+              # from the same category, go get a pitch from a different category.
+              while pitch in self.config.note.categories[category]:
+                # we don't want to add notes that are unpairable with the first note
+                #logger.log_debug("PITCH", 
+                #        "SIM NOTE failure: pitch " + str(pitch) + 
+                #        " is in the current category " + 
+                #        str(self.config.note.categories[category]))
+                pitch = self._generate_pitch(False)
+
+            note_length = get_random(self.config.note.length_scope)
+            self.add_note(self._create_note(note_length, pitch, volume))
+
+
           else:
-            if (self.config.note.allow_simultaneous_from_same_category == True and
-              self.config.note.force_simultaneous_from_same_category == False):
-              note_length = get_random(self.config.note.length_scope)
-              self.add_note(self._create_note(note_length, pitch, volume))
-            else:
-              break
-            #logger.log_debug("PITCH", 
-            #          "SIM NOTE: " + str(category) 
-            #          + " " + str(pitch) 
-            #          + " " + str(note_start_time) 
-            #          + " " + str(note_length) 
-            #          + " " + str(volume))
+            if (self.config.note.force_simultaneous_from_same_category == True):
+              while pitch in self.config.note.categories[category]:
+                #logger.log_debug("PITCH", 
+                #          "SIM NOTE: " + str(category) 
+                #          + " " + str(pitch) 
+                #          + " " + str(note_start_time) 
+                #          + " " + str(note_length) 
+                #          + " " + str(volume))
+                pitch = self._generate_pitch(False)
+              
+            note_length = get_random(self.config.note.length_scope)
+            self.add_note(self._create_note(note_length, pitch, volume))
 
         else:
           #logger.log_debug("PITCH", "NOT generating simultaneous note")
@@ -461,9 +515,10 @@ class PyRM:
   def build_tracks(self):
     for track in self.tracks:
       track.build_track()
-
+      print(track.config.name + ": ")
+      print(lea.vals(*track.categories))
     # find the longest track
-    max_note_start_time = max(self.tracks, key=attrgetter('note_start_time')).note_start_time    
+    #max_note_start_time = max(self.tracks, key=attrgetter('note_start_time')).note_start_time    
 
   #def write_stats(self):
     #logger.log_debug("GENERAL", self.config.getStats())
