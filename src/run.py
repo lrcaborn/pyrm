@@ -14,7 +14,9 @@ file_count = int(results.file_count)
 
 for i in range(file_count):
   improv_config = Config.ImprovConfig()
-  improv_config.track_configs = [Config.DrumEzxJazz()]
+  #improv_config.track_configs = [Config.DrumEzxJazz()]
+  improv_config.track_configs = [Config.DrumBlues()]
+  #improv_config.track_configs = [Config.DrumHell()]
   #improv_config.track_configs = [Config.DrumVintage1963()]
   #improv_config.track_configs = [Config.PianoLongChords()]
   #improv_config.track_configs = [Config.OrnamentPiano()]

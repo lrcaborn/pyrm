@@ -12,19 +12,19 @@ class ImprovConfig:
 
     self.tempo = TempoConfig()
     self.tempo.scope_change_chooser = lea.pmf({
-      False: 0.5,
-      True: 0.5
+      False: 0.75,
+      True: 0.25
     })
     self.tempo.change_chooser = lea.pmf({
-      False: 0.5,
-      True: 0.5
+      False: 0.75,
+      True: 0.25
     })
     self.tempo.scope_chooser = lea.pmf(
     {
-      0: 0.35,
-      1: 0.6,
-      2: 0.05,
-      3: 0,
+      0: 0,
+      1: 0.4,
+      2: 0.3,
+      3: 0.3,
       4: 0
     })
     self.tempo.scopes = (
@@ -42,28 +42,31 @@ class ImprovConfig:
     #self.tempo.scopes = [
     #  (50, 110)
     #]
-    
-class MapDrumSlow():
+
+class MapPianoOrnament():
   def __init__(self):
-    self.name = "Drum Slow"
+    self.name = "Ornament Piano"
     self.length_maps = {
-      "Name0": build_tempo_length_map((1, 301), 10, (0.9, 1.1)),
-      "Name1": build_tempo_length_map((1, 301), 9, (0.25, 0.5)),
-      "Name2": build_tempo_length_map((1, 301), 5, (0.5, 0.25)),
-      "Name3": build_tempo_length_map((1, 301), 10, (0.0625, 0.25))
+      "Name0": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
+      "Name1": build_tempo_length_map((1, 301), 9, (0.0625, 0.5)),
+      "Name2": build_tempo_length_map((1, 301), 9, (0.0625, 1.5)),
+      "Name3": build_tempo_length_map((1, 301), 9, (0.125, 0.25)),
+      "Name4": build_tempo_length_map((1, 301), 9, (0.125, 0.5)),
+      "Name5": build_tempo_length_map((1, 301), 9, (0.125, 1.5))
      }
-     
     self.length_map_chooser = lea.pmf({
-      "Name0": 0.2,
+      "Name0": 0.4,
       "Name1": 0.3,
-      "Name2": 0.3,
-      "Name3": 0.2
+      "Name2" : 0.1,
+      "Name3": 0.1,
+      "Name4": 0.05,
+      "Name5": 0.05
     })
-    
+
     self.space = SpaceConfig()
     self.space.chance = lea.pmf({
-      True: 0,
-      False: 1
+      True: 0.5,
+      False: 0.5
     })
     # seconds, so will need to calculate
     # tempo = 180bpm
@@ -72,7 +75,69 @@ class MapDrumSlow():
     # 480 * 3 = 1440 ticks
     # 1440 * rand # between 5 and 10 (let's say 7)
     # total tick count for this silence == 1440 * 7 == 10080
-    self.space.scope = (0.5, 1)
+    self.space.scope = (1, 3)
+
+class MapPianoComp():
+  def __init__(self):
+    self.name = "Piano Comp"
+    self.length_maps = {
+      "Name0": build_tempo_length_map((1, 301), 20, (0.25, 1.5)),
+      "Name1": build_tempo_length_map((1, 301), 5, (1, 2))
+     }
+    self.length_map_chooser = lea.pmf({
+      "Name0": 0.6,
+      "Name1": 0.4
+    })
+
+    self.space = SpaceConfig()
+    self.space.chance = lea.pmf({
+      True: 0.25,
+      False: 0.75
+    })
+    # seconds, so will need to calculate
+    # tempo = 180bpm
+    # that's 180 / 60 beats per seconds
+    # if we're using 480 ticks per quarter note, that's 
+    # 480 * 3 = 1440 ticks
+    # 1440 * rand # between 5 and 10 (let's say 7)
+    # total tick count for this silence == 1440 * 7 == 10080
+    self.space.scope = (0.25, 1.5)
+    
+class MapDrumSlow():
+  def __init__(self):
+    self.name = "Drum Slow"
+    self.length_maps = {
+      "Name0": build_tempo_length_map((1, 301), 10, (0.9, 1.1)),
+      "Name1": build_tempo_length_map((1, 301), 9, (0.25, 0.5)),
+      "Name2": build_tempo_length_map((1, 301), 5, (0.5, 0.75)),
+      "Name3": build_tempo_length_map((1, 301), 10, (0.0625, 0.25))
+     }
+     
+    self.length_map_chooser = lea.pmf({
+      "Name0": 0.4,
+      "Name1": 0.1,
+      "Name2": 0.5,
+    })
+    #self.length_map_chooser = lea.pmf({
+    #  "Name0": 0.5,
+    #  "Name1": 0.2,
+    #  "Name2": 0.3,
+    #  "Name3": 0
+    #})
+    
+    self.space = SpaceConfig()
+    self.space.chance = lea.pmf({
+      True: 0.05,
+      False: 0.95
+    })
+    # seconds, so will need to calculate
+    # tempo = 180bpm
+    # that's 180 / 60 beats per seconds
+    # if we're using 480 ticks per quarter note, that's 
+    # 480 * 3 = 1440 ticks
+    # 1440 * rand # between 5 and 10 (let's say 7)
+    # total tick count for this silence == 1440 * 7 == 10080
+    self.space.scope = (0.25, 0.5)
 
 class MapDrumFast():
   def __init__(self):
@@ -116,6 +181,9 @@ class NoteCategory(Enum):
   LOW = "Low"
   MIDDLE = "Middle"
   HIGH = "High"
+  
+  # keys
+  FMAJOR = "F major"
   
   def __str__(self):
     return self.name
@@ -192,8 +260,8 @@ class SpaceConfig:
 class TempoConfig:
   def __init__(self):
     self.scope_change_chooser = lea.pmf({
-      False: 0.15,
-      True: 0.85
+      False: 0.5,
+      True: 0.5
     })
     self.change_chooser = lea.pmf({
       False: 1,
@@ -201,11 +269,11 @@ class TempoConfig:
     })
     self.scope_chooser = lea.pmf(
     {
-      0: 0.15,
+      0: 0,
       1: 0.25,
-      2: 0.25,
+      2: 0.5,
       3: 0.25,
-      4: 0.1
+      4: 0
     })
     self.scopes = (
       (50, 100),
@@ -227,11 +295,11 @@ class VolumeConfig:
     })
     self.scope_chooser = lea.pmf(
     {
-      0: 0.05,
-      1: 0.20,
-      2: 0.40,
-      3: 0.20,
-      4: 0.15
+      0: 0.1,
+      1: 0.2,
+      2: 0.45,
+      3: 0.25,
+      4: 0
     })
     self.scopes = (
       (0, 32),
@@ -362,86 +430,234 @@ class Drum808():
     self.note = NoteConfig()
     self.note.allow_simultaneous_from_same_category = False
     self.note.force_simultaneous_from_same_category = False
+    # 37 snare rim
+    # 39 clap
+    # 40 clave
+    # 44 maraca
+    # 47, 48, 50 conga
+    # 51 "cowbell"
     self.note.categories = {
+      NoteCategory.CRASH.value: [49],
+      NoteCategory.FX.value: [37, 39, 40, 44, 47, 48, 50, 51],
       NoteCategory.HAT.value: [42, 46], 
       NoteCategory.KICK.value: [36], 
-      NoteCategory.SNARE.value: [38], 
-      NoteCategory.FX.value: [37, 39, 40, 41, 43, 44, 45, 47, 48, 49, 50, 51]
+      NoteCategory.SNARE.value: [38],
+      NoteCategory.TOM.value: [41, 43, 45]
     }
-    self.note.chooser = lea.pmf({
-      NoteCategory.HAT.value: 0.15, 
-      NoteCategory.KICK.value: 0.45, 
-      NoteCategory.SNARE.value: 0.35, 
-      NoteCategory.FX.value: 0.05
-    })
-    self.note.count_scope = [300, 350]
-    self.note.forbidden_notes = {}
-    self.note.length_scope = [self.note.ticks_per_quarternote*8, 
-                     self.note.ticks_per_quarternote*16]
+	
+    self.note.format_names = tuple(("HatSnare", "HatKickSnare", "CrashHatKickSnare", "CrashHatKickSnareTom"))
 
-    self.note.length_maps = {
-      "Name0": build_tempo_length_map((1, 301), 9, (0.25, 1))
-      #"Name1": build_tempo_length_map((1, 301), 9, (0.25, ))
-      #"Name2": build_tempo_length_map((1, 301), 16, (2, 32))
-      #"Name3": build_tempo_length_map((1, 301), 4, (0.125, 4))
-     }
-    self.note.length_map_chooser = lea.pmf({
-      "Name0": 1
-      #"Name1": 0.5
-      #"Name2" : 0.1
-      #"Name3": 0.10 
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.4, 0.3, 0.3))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.075, 0.375, 0.275, 0.275))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.075, 0.35, 0.25, 0.25, 0.075))
+                                )),
+                               ]
+							   
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
+
+    self.note.format_change_chooser = lea.pmf({
+      False: 0.9,
+      True: 0.1
     })
+
+    self.note.format_chooser = lea.pmf({
+      "HatSnare": 0.05,
+      "HatKickSnare": 0.8,
+      "CrashHatKickSnare": 0.1,
+      "CrashHatKickSnareTom": 0.05
+     })
+							   							   
+    self.note.count_scope = [50, 100]
+
+    self.note.forbidden_notes = set()
+	
+    self.note.length_scope = [self.note.ticks_per_quarternote*16, 
+                     self.note.ticks_per_quarternote*32]
+
+    #map = MapDrumFast()
+    map = MapDrumSlow()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
 
     self.note.max_simultaneous = 0
-    self.note.scope = [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 47, 48, 49, 50, 51]
+
+    # remove forbidden notes from all categories and the full note scope
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
+      self.note.scope = self.note.scope + self.note.categories[category]
+      #print(category + ": " + str(self.note.categories[category]))
+
     self.note.simultaneous_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0,
+      False: 1
     })
-    #self.simultaneous_note_category_behavior = SimultaneousNoteCategoryBehavior.Different
+	
+    self.note.ticks_per_quarternote = 480 # can be up to 960
+    
+    self.phrase = PhraseConfig()
+    self.phrase.count_scope = [7, 15]
+    self.phrase.record_chance = lea.pmf({
+      True: 0.2,
+      False: 0.8
+    })
+    self.phrase.replay_chance = lea.pmf({
+      True: 0.2,
+      False: 0.8
+    })
+    
+    self.space = map.space
+
+    self.use_randomized_tuning = False
+
+    self.volume = VolumeConfig()
+
+class blahConfig():
+  def __init__(self):
+    self.pattern = {
+      NoteCategory.CRASH.value: (1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      NoteCategory.HAT.value: (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+      NoteCategory.KICK.value: (1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0),
+      NoteCategory.RIDE.value: (0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1),
+      NoteCategory.SNARE.value: (0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0),
+      NoteCategory.TOM.value: (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+    }
+
+class DrumBlues():
+  def __init__(self):
+    self.name = "EzxBlues"
+    self.debug_log = False
+
+    self.note = NoteConfig()
+    self.note.allow_simultaneous_from_same_category = False
+    self.note.force_simultaneous_from_same_category = False
+
+    self.note.categories = {
+      NoteCategory.HAT.value: [21, 22, 23, 24, 25, 26, 42, 44, 46, 60, 61, 62, 63, 64, 65, ], 
+      NoteCategory.KICK.value: [36], 
+      NoteCategory.RIDE.value: [51, 52, 53, 54, 59], 
+      NoteCategory.SNARE.value: [38, 39, 40],  
+      NoteCategory.CRASH.value: [49, 50, 57, 58], 
+      NoteCategory.TOM.value: [43, 48]
+    }
+
+    self.note.count_scope = [50, 150]
+	
+    self.note.format_names = tuple(("All", "CrashSnare", "CrashTom", "HatSnare", "HatTom", "HatKickSnareTom", "HatRide", "SnareRide"))
+	
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.RIDE.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.05, 0.15, 0.3, 0.15, 0.2, 0.15))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.25, 0.25, 0.25, 0.25))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.RIDE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.RIDE.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                ))
+                               ]
+
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
+
+    self.note.format_change_chooser = lea.pmf({
+      False: 0.25,
+      True: 0.75
+    })
+
+    self.note.format_chooser = lea.pmf({
+      "All": 0.25,
+      "CrashSnare": 0.1,
+      "CrashTom": 0.1, 
+      "HatSnare": 0.1,
+      "HatTom": 0.1,
+      "HatKickSnareTom": 0.15,
+      "HatRide": 0.1,
+      "SnareRide": 0.1
+     })
+
+    # 37 is sidestick
+    self.note.forbidden_notes = {37} 
+    
+    # this is only really useful for making sure that cymbals left ringing don't cut out prematurely
+    self.note.length_scope = [self.note.ticks_per_quarternote*16, 
+                     self.note.ticks_per_quarternote*32]
+
+    map = MapDrumSlow()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
+
+    self.note.max_simultaneous = 2
+
+    # remove forbidden notes from all categories and the full note scope
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
+      self.note.scope = self.note.scope + self.note.categories[category]
+
+    self.note.simultaneous_chance = lea.pmf({
+      True: 0.75,
+      False: 0.25
+    })
+
     self.note.ticks_per_quarternote = 480 # can be up to 960
     
     self.phrase = PhraseConfig()
     self.phrase.count_scope = [3, 10]
     self.phrase.record_chance = lea.pmf({
-      True: 0.4,
-      False: 0.6
+      True: 0.3,
+      False: 0.7
     })
     self.phrase.replay_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0.5,
+      True: 0.5,
+      False: 0.5
     })
     
-    self.space = SpaceConfig()
-    self.space.chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
-    })
-    # seconds, so will need to calculate
-    # tempo = 180bpm
-    # that's 180 / 60 beats per seconds
-    # if we're using 480 ticks per quarter note, that's 
-    # 480 * 3 = 1440 ticks
-    # 1440 * rand # between 5 and 10 (let's say 7)
-    # total tick count for this silence == 1440 * 7 == 10080
-    self.space.scope = (1, 3)
-
-    self.tempo = TempoConfig()
-    self.tempo.change_chooser = lea.pmf({
-      True: 0.01,
-      False: 0.99
-    })
-    self.scope_chooser = lea.pmf(
-    {
-      0: 1
-    })
-    self.scopes = (
-      (60, 150)
-    )
+    self.space = map.space
 
     self.use_randomized_tuning = False
-    self.volume_scope = [80, 110]
 
+    self.volume = VolumeConfig()
 
 
 class DrumEzxJazz():
@@ -462,44 +678,52 @@ class DrumEzxJazz():
       NoteCategory.TOM.value: [4, 5, 41, 43, 45, 47, 48, 50, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82]
     }
 
-    self.note.formats = {
-      "Name0":
-              lea.pmf({
-                NoteCategory.CRASH.value: 0.05,
-                NoteCategory.HAT.value: 0.05,
-                NoteCategory.KICK.value: 0.3,
-                NoteCategory.RIDE.value: 0.15,
-                NoteCategory.SNARE.value: 0.3,
-                NoteCategory.TOM.value: 0.15
-              }),
-      "Name1":
-        lea.pmf({
-          NoteCategory.CRASH.value: 0.5,
-          NoteCategory.SNARE.value: 0.5
-        }),
-      "Name2":
-        lea.pmf({
-          NoteCategory.CRASH.value: 0.5,
-          NoteCategory.TOM.value: 0.5
-        }),
-      "Name3":
-        lea.pmf({
-          NoteCategory.HAT.value: 0.5,
-          NoteCategory.SNARE.value: 0.5
-        }),
-      "Name4":
-        lea.pmf({
-          NoteCategory.HAT.value: 0.5,
-          NoteCategory.TOM.value: 0.5
-        }),
-      "Name5":
-        lea.pmf({
-          NoteCategory.HAT.value: 0.15,
-          NoteCategory.KICK.value: 0.35,
-          NoteCategory.SNARE.value: 0.35,
-          NoteCategory.TOM.value: 0.15
-        })
-    }
+    self.note.count_scope = [250, 750]
+	
+    self.note.format_names = tuple(("All", "CrashSnare", "CrashTom", "HatSnare", "HatTom", "HatKickSnareTom", "HatRide", "RideSnare", "RideTom"))
+	
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.RIDE.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.05, 0.15, 0.3, 0.15, 0.2, 0.15))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.25, 0.25, 0.25, 0.25))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.RIDE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.RIDE.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                               dict(zip(
+                                    tuple((NoteCategory.RIDE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                ))
+                                ]
+
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
 
     self.note.format_change_chooser = lea.pmf({
       False: 0.25,
@@ -507,15 +731,16 @@ class DrumEzxJazz():
     })
 
     self.note.format_chooser = lea.pmf({
-      "Name0": 0.15,
-      "Name1": 0.15,
-      "Name2": 0.15,
-      "Name3": 0.15,
-      "Name4": 0.15,
-      "Name5": 0.25
+      "All": 0.1,
+      "CrashSnare": 0.1,
+      "CrashTom": 0.1, 
+      "HatSnare": 0.125,
+      "HatTom": 0.125,
+      "HatKickSnareTom": 0.1,
+      "HatRide": 0.1,
+      "RideSnare": 0.125,
+      "RideTom": 0.125
      })
-
-    self.note.count_scope = [50, 500]
 
     # 37 is the only sidestick in brush kit
     # add 127, 71, 67 for full kits
@@ -525,33 +750,30 @@ class DrumEzxJazz():
     self.note.length_scope = [self.note.ticks_per_quarternote*16, 
                      self.note.ticks_per_quarternote*32]
 
-    #map = MapDrumFast()
     map = MapDrumSlow()
 
     self.note.length_maps = map.length_maps
     self.note.length_map_chooser = map.length_map_chooser
 
-    self.note.max_simultaneous = 3
+    self.note.max_simultaneous = 2
 
     # remove forbidden notes from all categories and the full note scope
     for category in self.note.categories:
       self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
-      #print(category + ": " + str(self.note.categories[category]))
-    self.note.scope = list(set(range(1, 128)) - self.note.forbidden_notes)
-    #print("full scope: " + str(self.note.scope))
-    
+      self.note.scope = self.note.scope + self.note.categories[category]
+
     self.note.simultaneous_chance = lea.pmf({
-      True: 0.5,
-      False: 0.5
+      True: 0.75,
+      False: 0.25
     })
-    #self.simultaneous_note_category_behavior = SimultaneousNoteCategoryBehavior.DIFFERENT
+
     self.note.ticks_per_quarternote = 480 # can be up to 960
     
     self.phrase = PhraseConfig()
     self.phrase.count_scope = [3, 10]
     self.phrase.record_chance = lea.pmf({
-      True: 0.5,
-      False: 0.5
+      True: 0.3,
+      False: 0.7
     })
     self.phrase.replay_chance = lea.pmf({
       True: 0.5,
@@ -564,6 +786,128 @@ class DrumEzxJazz():
 
     self.volume = VolumeConfig()
 
+class DrumHell():
+  def __init__(self):
+    self.name = "EzxDKFH"
+    self.debug_log = False
+
+    self.note = NoteConfig()
+    self.note.allow_simultaneous_from_same_category = False
+    self.note.force_simultaneous_from_same_category = False
+
+    self.note.categories = {
+      NoteCategory.HAT.value: [21, 22, 23, 24, 25, 26, 42, 44, 60, 65], 
+      NoteCategory.KICK.value: [34, 36], 
+      NoteCategory.RIDE.value: [51, 53, 59, 84, 85, 86, 89, 90, 91, 96, 97, 98, 101, 102, 103], 
+      NoteCategory.SNARE.value: [33, 38, 39, 40, 69, 70],  
+      NoteCategory.CRASH.value: [27, 28, 29, 30, 31, 32, 49, 52, 54, 55, 57, 58, 93, 94, 95, 105, 106, 107, 117, 118], 
+      NoteCategory.TOM.value: [41, 43, 45, 47, 48, 50, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82]
+    }
+
+    self.note.count_scope = [50, 150]
+	
+    self.note.format_names = tuple(("All", "CrashSnare", "CrashTom", "HatSnare", "HatTom", "HatKickSnareTom", "HatRide", "SnareRide"))
+	
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.RIDE.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.05, 0.15, 0.3, 0.15, 0.2, 0.15))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.25, 0.25, 0.25, 0.25))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.RIDE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.RIDE.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                ))
+                               ]
+
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
+
+    self.note.format_change_chooser = lea.pmf({
+      False: 0.25,
+      True: 0.75
+    })
+
+    self.note.format_chooser = lea.pmf({
+      "All": 0.25,
+      "CrashSnare": 0.1,
+      "CrashTom": 0.1, 
+      "HatSnare": 0.1,
+      "HatTom": 0.1,
+      "HatKickSnareTom": 0.15,
+      "HatRide": 0.1,
+      "SnareRide": 0.1
+     })
+
+    # 37 and 71 is sidestick
+    self.note.forbidden_notes = {37, 71} 
+    
+    # this is only really useful for making sure that cymbals left ringing don't cut out prematurely
+    self.note.length_scope = [self.note.ticks_per_quarternote*16, 
+                     self.note.ticks_per_quarternote*32]
+
+    map = MapDrumSlow()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
+
+    self.note.max_simultaneous = 2
+
+    # remove forbidden notes from all categories and the full note scope
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
+      self.note.scope = self.note.scope + self.note.categories[category]
+
+    self.note.simultaneous_chance = lea.pmf({
+      True: 0.75,
+      False: 0.25
+    })
+
+    self.note.ticks_per_quarternote = 480 # can be up to 960
+    
+    self.phrase = PhraseConfig()
+    self.phrase.count_scope = [3, 10]
+    self.phrase.record_chance = lea.pmf({
+      True: 0.3,
+      False: 0.7
+    })
+    self.phrase.replay_chance = lea.pmf({
+      True: 0.5,
+      True: 0.5,
+      False: 0.5
+    })
+    
+    self.space = map.space
+
+    self.use_randomized_tuning = False
+
+    self.volume = VolumeConfig()
+
+    
 class DrumVintage1963():
   def __init__(self):
     self.name = "Vintage1963"
@@ -584,16 +928,66 @@ class DrumVintage1963():
       NoteCategory.CRASH.value: [48, 49, 56, 57], 
       NoteCategory.TOM.value: [43, 47]
     }
-    self.note.chooser = lea.pmf({
-      NoteCategory.CRASH.value: 0.05,
-      NoteCategory.HAT.value: 0.15,
-      NoteCategory.KICK.value: 0.3,
-      NoteCategory.RIDE.value: 0.15,
-      NoteCategory.SNARE.value: 0.2,
-      NoteCategory.TOM.value: 0.15
+    
+    self.note.count_scope = [100, 200]
+
+    self.note.format_names = tuple(("All", "CrashSnare", "CrashTom", "HatSnare", "HatTom", "HatKickSnareTom", "HatRide", "SnareRide"))
+    
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.RIDE.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.05, 0.15, 0.3, 0.15, 0.2, 0.15))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.CRASH.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.TOM.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                    tuple((0.25, 0.25, 0.25, 0.25))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HAT.value, NoteCategory.RIDE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.RIDE.value, NoteCategory.SNARE.value)), 
+                                    tuple((0.5, 0.5))
+                                ))
+                               ]
+    
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
+
+    self.note.format_change_chooser = lea.pmf({
+      False: 0.25,
+      True: 0.75
     })
 
-    self.note.count_scope = [25, 50]
+    self.note.format_chooser = lea.pmf({
+      "All": 0.25,
+      "CrashSnare": 0,
+      "CrashTom": 0, 
+      "HatSnare": 0.1,
+      "HatTom": 0.1,
+      "HatKickSnareTom": 0.2,
+      "HatRide": 0.15,
+      "SnareRide": 0.2
+     })
+
 
     # 37 is sidestick
     self.note.forbidden_notes = {37} 
@@ -602,8 +996,8 @@ class DrumVintage1963():
     self.note.length_scope = [self.note.ticks_per_quarternote*16, 
                      self.note.ticks_per_quarternote*32]
 
-    map = MapDrumFast()
-    #map = MapDrumSlow()
+    #map = MapDrumFast()
+    map = MapDrumSlow()
 
     self.note.length_maps = map.length_maps
     self.note.length_map_chooser = map.length_map_chooser
@@ -613,22 +1007,24 @@ class DrumVintage1963():
     # remove forbidden notes from all categories and the full note scope
     for category in self.note.categories:
       self.note.categories[category] = list(set(self.note.categories[category]) - self.note.forbidden_notes)
+      self.note.scope = self.note.scope + self.note.categories[category]
       #print(category + ": " + str(self.note.categories[category]))
-    self.note.scope = list(set(range(1, 128)) - self.note.forbidden_notes)
+
+    #self.note.scope = list(set(range(1, 128)) - self.note.forbidden_notes)
     #print("full scope: " + str(self.note.scope))
     
     self.note.simultaneous_chance = lea.pmf({
-      True: 0.5,
-      False: 0.5
+      True: 0.75,
+      False: 0.25
     })
     #self.simultaneous_note_category_behavior = SimultaneousNoteCategoryBehavior.DIFFERENT
     self.note.ticks_per_quarternote = 480 # can be up to 960
     
     self.phrase = PhraseConfig()
-    self.phrase.count_scope = [3, 10]
+    self.phrase.count_scope = [3, 8]
     self.phrase.record_chance = lea.pmf({
-      True: 0.5,
-      False: 0.5
+      True: 0.2,
+      False: 0.8
     })
     self.phrase.replay_chance = lea.pmf({
       True: 0.5,
@@ -641,7 +1037,6 @@ class DrumVintage1963():
 
     self.volume = VolumeConfig()
 
-
 class OrnamentPiano():
   def __init__(self):
     self.name = "OrnamentPiano"
@@ -649,76 +1044,115 @@ class OrnamentPiano():
 
     self.note = NoteConfig()
     self.note.allow_simultaneous_from_same_category = False
+    self.note.force_simultaneous_from_same_category = False
     self.note.scope = [21, 109]
     self.note.categories = {
-      NoteCategory.LOW.value: list(range(self.note.scope[0], 56)),
-      NoteCategory.HIGH.value: list(range(57, self.note.scope[1]))
+      #NoteCategory.LOW.value: list(range(self.note.scope[0], 56)),
+      #NoteCategory.HIGH.value: list(range(57, self.note.scope[1])),
+      NoteCategory.FMAJOR.value: [38, 40, 41, 43, 45, 46, 48]
     }
     self.note.chooser = lea.pmf({
-      NoteCategory.LOW.value: 0.2,
-      NoteCategory.HIGH.value: 0.8,
+      #NoteCategory.LOW.value: 0.0,
+      #NoteCategory.HIGH.value: 0.0,
+      NoteCategory.FMAJOR.value: 1
     })
-    self.note.count_scope = [10, 25]
+    self.note.count_scope = [100, 500]
+
+    #self.note.format_names = tuple(("Low", "High", "BothEven", "BothLowFavored", "BothHighFavored", "FMAJOR"))
+    self.note.format_names = tuple(("FMAJOR",))
     
-    self.note.length_maps = {
-      "Name0": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
-      "Name1": build_tempo_length_map((1, 301), 9, (0.0625, 0.5)),
-      "Name2": build_tempo_length_map((1, 301), 9, (0.0625, 1.5)),
-      "Name3": build_tempo_length_map((1, 301), 9, (0.125, 0.25)),
-      "Name4": build_tempo_length_map((1, 301), 9, (0.125, 0.5)),
-      "Name5": build_tempo_length_map((1, 301), 9, (0.125, 1.5))
-     }
-    self.note.length_map_chooser = lea.pmf({
-      "Name0": 0.4,
-      "Name1": 0.3,
-      "Name2" : 0.1,
-      "Name3": 0.1,
-      "Name4": 0.05,
-      "Name5": 0.05
+    #self.note.format_definitions = [
+    #                            dict(zip(
+    #                                tuple((NoteCategory.LOW.value,)), 
+    #                                tuple((1,))
+    #                            )),
+    #                            dict(zip(
+    #                                tuple((NoteCategory.HIGH.value,)), 
+    #                                tuple((1,))
+    #                            )),
+    #                            dict(zip(
+    #                                tuple((NoteCategory.LOW.value, NoteCategory.HIGH.value)), 
+    #                                tuple((0.5, 0.5))
+    #                            )),
+    #                            dict(zip(
+    #                                tuple((NoteCategory.LOW.value, NoteCategory.HIGH.value)), 
+    #                                tuple((0.7, 0.3))
+    #                            )),
+    #                            dict(zip(
+    #                                tuple((NoteCategory.LOW.value, NoteCategory.HIGH.value)), 
+    #                                tuple((0.3, 0.7))
+    #                            )),
+    #                            dict(zip(
+    #                                tuple((NoteCategory.FMAJOR.value)), 
+    #                                tuple((1,))
+    #                            ))
+    #                           ]
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.FMAJOR.value)), 
+                                    tuple((1,))
+                                ))
+                               ]
+    
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+    print("format_probabilities: " + str(self.note.format_probabilities))
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
+    print("formats: " + str(self.note.formats))
+    
+    self.note.format_change_chooser = lea.pmf({
+      False: 1,
+      True: 0
     })
+
+    self.note.format_chooser = lea.pmf({
+      #"Low": 0.2,
+      #"High": 0.2,
+      #"BothEven": 0.2, 
+      #"BothLowFavored": 0.2,
+      #"BothHighFavored": 0.2,
+      "FMAJOR": 1
+     })
     
     self.note.forbidden_notes = []
+    
     self.note.length_scope = [self.note.ticks_per_quarternote*8, 
-                     self.note.ticks_per_quarternote*16]
+                      self.note.ticks_per_quarternote*16]
 
-    map = MapDrumFast()
+    map = MapPianoOrnament()
 
     self.note.length_maps = map.length_maps
     self.note.length_map_chooser = map.length_map_chooser
 
     self.note.max_simultaneous = 4
+
+    # remove forbidden notes from all categories and the full note scope
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - set(self.note.forbidden_notes))
+      self.note.scope = self.note.scope + self.note.categories[category]
+
     self.note.simultaneous_chance = lea.pmf({
       True: 0.25,
       False: 0.75
     })
+	
     self.note.ticks_per_quarternote = 480 # can be up to 960
 
     self.phrase = PhraseConfig()
     self.phrase.count_scope = [3, 10]
     self.phrase.record_chance = lea.pmf({
-      True: 0.1,
-      False: 0.9
-    })
-    self.phrase.replay_chance = lea.pmf({
       True: 0.25,
       False: 0.75
     })
-
-    self.space = SpaceConfig()
-    self.space.chance = lea.pmf({
-      True: 0.5,
-      False: 0.5
+    self.phrase.replay_chance = lea.pmf({
+      True: 0.4,
+      False: 0.6
     })
-    # seconds, so will need to calculate
-    # tempo = 180bpm
-    # that's 180 / 60 beats per seconds
-    # if we're using 480 ticks per quarter note, that's 
-    # 480 * 3 = 1440 ticks
-    # 1440 * rand # between 5 and 10 (let's say 7)
-    # total tick count for this silence == 1440 * 7 == 10080
-    self.space.scope = (1, 2)
+
+    self.space = map.space
 
     self.use_randomized_tuning = False
+
     self.volume = VolumeConfig()
 
 class CompPiano():
@@ -740,36 +1174,79 @@ class CompPiano():
       NoteCategory.MIDDLE.value: 0.9,
       NoteCategory.HIGH.value: 0.05,
     })
-    self.note.count_scope = [13, 13]
+    self.note.count_scope = [300, 400]
 
-    self.note.length_maps = {
-      #"Name0": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
-      #"Name1": build_tempo_length_map((1, 301), 9, (0.0625, 0.5)),
-      #"Name2": build_tempo_length_map((1, 301), 9, (0.0625, 1.5)),
-      #"Name3": build_tempo_length_map((1, 301), 9, (0.125, 0.25)),
-      "Name0": build_tempo_length_map((1, 301), 20, (0.25, 1.5)),
-      "Name1": build_tempo_length_map((1, 301), 5, (1, 2))
-      
-      #"Name2": build_tempo_length_map((1, 301), 16, (2, 32))
-      #"Name3": build_tempo_length_map((1, 301), 4, (0.125, 4))
-     }
-    self.note.length_map_chooser = lea.pmf({
-      #"Name0": 0,
-      #"Name1": 0,
-      #"Name2" : 0.3,
-      #"Name3": 0,
-      "Name0": 0.6,
-      "Name1": 0.4
+    self.note.format_names = tuple(("Low", "Middle", "High", "LowMiddle", "MiddleHigh", "All"))
+    
+    self.note.format_definitions = [
+                                dict(zip(
+                                    tuple((NoteCategory.LOW.value,)), 
+                                    tuple((1,))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.MIDDLE.value,)), 
+                                    tuple((1,))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.HIGH.value,)), 
+                                    tuple((1,))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.LOW.value, NoteCategory.MIDDLE.value)), 
+                                    tuple((0.5, 0.5))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.MIDDLE.value, NoteCategory.HIGH.value)), 
+                                    tuple((0.7, 0.3))
+                                )),
+                                dict(zip(
+                                    tuple((NoteCategory.LOW.value, NoteCategory.MIDDLE.value, NoteCategory.HIGH.value)), 
+                                    tuple((0.3, 0.7))
+                                ))
+                               ]
+    
+    self.note.format_probabilities = [lea.pmf(definition) for definition in self.note.format_definitions]
+
+    self.note.formats = dict(zip(self.note.format_names, self.note.format_probabilities))
+
+    self.note.format_change_chooser = lea.pmf({
+      False: 0.25,
+      True: 0.75
     })
+
+    self.note.format_chooser = lea.pmf({
+      "Low": 0.05,
+      "Middle": 0.4,
+      "High": 0.05,
+      "LowMiddle": 0.2, 
+      "MiddleHigh": 0.2,
+      "All": 0.1
+     })
+    
+    self.note.forbidden_notes = []
+
 
     # from a 32nd note to 2 measures
     self.note.length_scope = [self.note.ticks_per_quarternote/8, 
                      self.note.ticks_per_quarternote*8]
-    self.note.max_simultaneous = 3
+
+    map = MapPianoComp()
+
+    self.note.length_maps = map.length_maps
+    self.note.length_map_chooser = map.length_map_chooser
+
+    self.note.max_simultaneous = 4
+	
+	# remove forbidden notes from all categories and the full note scope
+    for category in self.note.categories:
+      self.note.categories[category] = list(set(self.note.categories[category]) - set(self.note.forbidden_notes))
+      self.note.scope = self.note.scope + self.note.categories[category]
+
     self.note.simultaneous_chance = lea.pmf({
       True: 0.75,
       False: 0.25
     })
+
     self.note.ticks_per_quarternote = 480 # can be up to 960
 
     self.phrase = PhraseConfig()
@@ -779,32 +1256,15 @@ class CompPiano():
       False: 0.75
     })
     self.phrase.replay_chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0.4,
+      False: 0.6
     })
 
-    self.space = SpaceConfig()
-    self.space.chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
-    })
-    # seconds, so will need to calculate
-    # tempo = 180bpm
-    # that's 180 / 60 beats per seconds
-    # if we're using 480 ticks per quarter note, that's 
-    # 480 * 3 = 1440 ticks
-    # 1440 * rand # between 5 and 10 (let's say 7)
-    # total tick count for this silence == 1440 * 7 == 10080
-    self.space.scope = (0.25, 1.5)
-
-    self.tempo = TempoConfig()
-    self.tempo.change_chooser = lea.pmf({
-      True: 0,
-      False: 1
-    })
+    self.space = map.space
 
     self.use_randomized_tuning = False
-    self.volume_scope = [80, 100]
+
+    self.volume = VolumeConfig()
 
 class PadPiano():
   def __init__(self):
@@ -1103,3 +1563,4 @@ class Vibes():
 
     self.use_randomized_tuning = False
     self.volume_scope = [90, 110]
+
