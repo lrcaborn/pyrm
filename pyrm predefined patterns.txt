@@ -1,0 +1,35 @@
+defaulting pyrm to 480 ticks per quarter note, which is 1920 per measure
+we split this down to half, quarter, eighth, sixteenth, etc by adding 1 to an exponent of 2:
+1920/2^0 = 1920
+1920/2^1 = 960 (half)
+1920/2^2 = 480 (quarter)
+1920/2^3 = 240 (eighth)
+1920/2^4 = 120 (sixteenth)
+1920/2^5 = 60 (32nd)
+1920/2^6 = 30 (64th)
+1920/2^7 = 15 (128th)
+
+
+We can do the same for 3 beat based measures by adding 1 to an expornent of 3:
+1920/3^0 = 1920
+1920/3^1 = 640 (half)
+1920/3^2 = 320 (quarter)
+1920/3^3 = 160 (eighth)
+1920/3^4 = 80 (sixteenth)
+1920/3^5 = 40 (32nd)
+1920/3^6 = 20 (64th)
+1920/3^7 = 10 (128th)
+
+
+phrase definition
+* measure count
+
+pattern definition:
+* division: 2^4
+* weight: 0.9 (probability/likelihood)
+* note category or maybe this is just a single note and we end up putting 3, 4 patterns (ride, hat, snare, kick) into a phrase definition
+
+
+
+
+PROBLEM - just cutting # of ticks per quarter note impacts the tempo. have to rethink how to reduce amount of detail without changing tempo.

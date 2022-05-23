@@ -132,6 +132,7 @@ class Track:
         print("Format changed to: " + str(self.format))
       category = self.config.note.formats[self.format].random()
       print("CATEGORY: " + str(category))
+      print("self.config.note.categories: " + str(self.config.note.categories))
       scopes = self.config.note.categories[category]
       pitch = get_random_from_list(scopes)
       print("PITCH", 
