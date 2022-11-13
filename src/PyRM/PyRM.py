@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import jsonpickle
 import lea
 import logging
@@ -198,10 +197,10 @@ class Track:
       self.tempos[self.note_start_time] = tempo_scope[0]
     
     #print("TEMPO", "TRACK  NOTE_START_TIME  TEMPO")
-    #print("TEMPO", 
-    #          str(track_number) + "  " + 
-    #          str(note_start_time) + "  " + 
-    #          str(self.tempos[note_start_time]))
+    print("TEMPO", 
+              str(track_number) + "  " + 
+              str(self.note_start_time) + "  " + 
+              str(self.tempos[self.note_start_time]))
 
     #print("PITCH", 
     #          "category  pitch  note_start_time  note_length  volume")
@@ -240,8 +239,8 @@ class Track:
           #print("tempo changed: " + str(self.tempos[self.note_start_time]))
           #print("TEMPO", 
           #          str(track_number) + "  " + 
-          #          str(note_start_time) + "  " + 
-          #          str(track.tempos[note_start_time]))
+          #          str(self.note_start_time) + "  " + 
+          #          str(self.tempos[self.note_start_time]))
     
       #################
       # VOLUME CHANGE #

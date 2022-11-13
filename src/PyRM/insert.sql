@@ -18,7 +18,9 @@ VALUES
 	-- piano
 	('Low'),
 	('Middle'),
-	('High');
+	('High'),
+  	('AHarmonicMinor'),
+  	('Japanese');
 
 
 
@@ -131,14 +133,13 @@ INSERT INTO config_note
 		allow_simultaneous_from_same_category, force_simultaneous_from_same_category, 
 		format_change_chance, max_simultaneous, simultaneous_chance, 
 		count_scope_low, count_scope_high, 
-		length_scope_low, 
-		length_scope_high
+		length_scope_low, length_scope_high
 	) 
 	VALUES 
 	(
 		(SELECT name FROM default_name WHERE table_name = 'config_note'), 
 		0, 0, 
-		75, 3, 75, 
+		50, 3, 50, 
 		100, 350,
 		(SELECT ticks_per_quarternote * 16 FROM config_session WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_session')),
 		(SELECT ticks_per_quarternote * 32 FROM config_session WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_session'))
@@ -321,9 +322,10 @@ CREATE TABLE config_volume_scope(
 INSERT INTO config_volume_scope
 	(config_volume_id, low, high, chance)
 VALUES
-	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 0, 32, 5),
-	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 32, 64, 20),
-	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 64, 96, 40),
-	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 96, 106, 20),
-	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 106, 127, 15)
+	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 0, 32, 10),
+	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 32, 64, 30),
+	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 64, 85, 60),
+	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 86, 96, 20),
+	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 96, 105, 0)
+	((SELECT id FROM config_volume WHERE name = (SELECT name FROM default_name WHERE table_name = 'config_volume')), 105, 127, 0)
 
