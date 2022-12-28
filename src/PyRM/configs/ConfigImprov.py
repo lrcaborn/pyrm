@@ -13,19 +13,19 @@ class ConfigImprov:
 
     self.tempo = PyRM.configs.ConfigTempo.ConfigTempo()
     self.tempo.scope_change_chooser = lea.pmf({
-      False: 0.75,
-      True: 0.25
+      False: 0.9,
+      True: 0.1
     })
     self.tempo.change_chooser = lea.pmf({
-      False: 0.75,
-      True: 0.25
+      False: 0.5,
+      True: 0.5
     })
     self.tempo.scope_chooser = lea.pmf(
     {
       0: 0,
-      1: 1,
-      2: 0,
-      3: 0,
+      1: 0.34,
+      2: 0.33,
+      3: 0.33,
       4: 0
     })
     self.tempo.scopes = (
@@ -35,26 +35,6 @@ class ConfigImprov:
       (200, 250),
       (250, 300)
     )
-
-    #self.tempo.scope_chooser = lea.pmf(
-    #{
-    #  0: 1
-    #})
-    #self.tempo.scopes = [
-    #  (50, 110)
-    #]
-
-
-    
-
-    
-
-
-
-
-#def calculate_modifier_end(modifier_start, modifier_adjustment):
-#  return modifier_start * modifier_adjustment
-#  #return modifier_start + (0.5 / modifier_adjustment)
 
 # modifier 
 # 1 = quarter note
@@ -82,31 +62,3 @@ def build_tempo_length_map(tempo_range, tempo_increment, modifier_range):
     index += 1
 
   return tempo_length_map
-
-
-
-
-  
-
-
-class blahConfig():
-  def __init__(self):
-    self.pattern = {
-      NoteCategory.CRASH.value: (1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-      NoteCategory.HAT.value: (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-      NoteCategory.KICK.value: (1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0),
-      NoteCategory.RIDE.value: (0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1),
-      NoteCategory.SNARE.value: (0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0),
-      NoteCategory.TOM.value: (0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
-    }
-
-
-
-
-    
-
-
-
-    
-
-

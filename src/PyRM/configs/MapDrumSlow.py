@@ -36,4 +36,4 @@ class MapDrumSlow():
     # 480 * 3 = 1440 ticks
     # 1440 * rand # between 5 and 10 (let's say 7)
     # total tick count for this silence == 1440 * 7 == 10080
-    self.space.scope = (0.1, 1)
+    self.space.scope = (0.1, 2)

@@ -1,3 +1,7 @@
+import lea
+from PyRM.configs.ConfigImprov import build_tempo_length_map
+from PyRM.configs.ConfigSpace import ConfigSpace
+
 class MapPianoOrnament():
   def __init__(self):
     self.name = "Piano Ornament"
@@ -19,10 +23,10 @@ class MapPianoOrnament():
       "Name5": 0
     })
 
-    self.space = SpaceConfig()
+    self.space = ConfigSpace()
     self.space.chance = lea.pmf({
-      True: 0.05,
-      False: 0.95
+      True: 0.25,
+      False: 0.75
     })
     # seconds, so will need to calculate
     # tempo = 180bpm

@@ -15,7 +15,7 @@ class NoteCategory(Enum):
   HIGH = "High"
   
   # keys
-  AHARMONICMINOR = "AHARMONICMINOR"
+  HARMONICMINOR = "HARMONICMINOR"
   JAPANESE = "JAPANESE"
   
   def __str__(self):
