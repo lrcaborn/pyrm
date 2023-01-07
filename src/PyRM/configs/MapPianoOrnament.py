@@ -6,17 +6,17 @@ class MapPianoOrnament():
   def __init__(self):
     self.name = "Piano Ornament"
     self.length_maps = {
-      #"Name0": build_tempo_length_map((1, 301), 1, (0.003125, 0.0625))
-      "Name0": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
-      "Name1": build_tempo_length_map((1, 301), 5, (0.0625, 0.5)),
-      "Name2": build_tempo_length_map((1, 301), 9, (0.0625, 1.5)),
-      "Name3": build_tempo_length_map((1, 301), 9, (0.125, 0.25)),
-      "Name4": build_tempo_length_map((1, 301), 9, (0.125, 0.5)),
-      "Name5": build_tempo_length_map((1, 301), 9, (0.125, 1.5))
+      "Name0": build_tempo_length_map((1, 301), 1, (0.003125, 0.0625)),
+      "Name1": build_tempo_length_map((1, 301), 9, (0.0625, 0.25)),
+      "Name2": build_tempo_length_map((1, 301), 5, (0.0625, 0.5)),
+      "Name3": build_tempo_length_map((1, 301), 9, (0.0625, 1.5)),
+      "Name4": build_tempo_length_map((1, 301), 9, (0.125, 0.25)),
+      "Name5": build_tempo_length_map((1, 301), 9, (0.125, 0.5)),
+      "Name6": build_tempo_length_map((1, 301), 9, (0.125, 1.5))
      }
     self.length_map_chooser = lea.pmf({
-      "Name0": 0,
-      "Name1": 1,
+      "Name0": 0.75,
+      "Name1": 0.25,
       "Name2": 0,
       "Name3": 0,
       "Name4": 0,
@@ -25,8 +25,8 @@ class MapPianoOrnament():
 
     self.space = ConfigSpace()
     self.space.chance = lea.pmf({
-      True: 0.25,
-      False: 0.75
+      True: 0.05,
+      False: 0.95
     })
     # seconds, so will need to calculate
     # tempo = 180bpm

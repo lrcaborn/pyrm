@@ -1,5 +1,5 @@
 from PyRM.configs import ConfigImprov
-from PyRM.configs import ConfigNote
+from PyRM.configs import ConfigNoteBase
 from PyRM.configs import ConfigPhrase
 from PyRM.configs import ConfigSpace
 from PyRM.configs import ConfigTempo

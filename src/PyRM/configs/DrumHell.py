@@ -1,11 +1,13 @@
 import lea
-from PyRM.configs.ConfigNote import ConfigNote
+from PyRM.configs.ConfigNoteBase import ConfigNoteBase
 from PyRM.configs.ConfigVolume import ConfigVolume
 from PyRM.configs.MapDrumSlow import MapDrumSlow
 from PyRM.configs.NoteCategory import NoteCategory
 
-class ConfigNote:
+class ConfigNote(ConfigNoteBase):
     def __init__(self, ticks_per_quarternote):
+        super().__init__(ticks_per_quarternote) 
+
         self.allow_simultaneous_from_same_category = False
         self.force_simultaneous_from_same_category = False
 

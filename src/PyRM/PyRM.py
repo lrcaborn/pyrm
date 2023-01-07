@@ -128,7 +128,7 @@ class Track:
         if isPrimaryNote:
             if self.format is None or self.config.note.format_change_chooser.random():
                 self.format = self.config.note.format_chooser.random()
-                print("Format changed to: " + str(self.format))
+                print("1 Format changed to: " + str(self.format))
             category = self.config.note.formats[self.format].random()
             print("CATEGORY: " + str(category))
             print("self.config.note.categories: " + str(self.config.note.categories))
@@ -167,7 +167,7 @@ class Track:
 
         if self.format is None or self.config.note.format_change_chooser.random():
             self.format = self.config.note.format_chooser.random()
-            print("Format changed to: " + str(self.format))
+            print("2 Format changed to: " + str(self.format))
 
         print("self.config.note.formats: " + str(self.config.note.formats))
         print("self.config.note.formats[self.format]: " + str(self.config.note.formats[self.format]))

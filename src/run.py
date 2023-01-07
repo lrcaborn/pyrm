@@ -16,12 +16,12 @@ file_count = int(results.file_count)
 for i in range(file_count):
     improv_config = ConfigImprov.ConfigImprov()
     #improv_config.track_configs = [DrumEzxJazz.DrumEzxJazz(improv_config.ticks_per_quarternote)]
+    improv_config.track_configs = [PianoOrnament.PianoOrnament(improv_config.ticks_per_quarternote)]
     #improv_config.track_configs = [Config.DrumBlues()]
     #improv_config.track_configs = [DrumHell.DrumHell(improv_config.ticks_per_quarternote)]
     #improv_config.track_configs = [Config.DrumVintage1963()]
     #improv_config.track_configs = [Config.PianoLongNotes()]
     #improv_config.track_configs = [Config.PadPiano()]
-    improv_config.track_configs = [PianoOrnament.PianoOrnament(improv_config.ticks_per_quarternote)]
     #improv_config.track_configs = [Config.Drum808()]
     #improv_config.track_configs = [Config.CompPiano()]
 
