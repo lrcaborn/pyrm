@@ -1,5 +1,5 @@
 defaulting pyrm to 480 ticks per quarter note, which is 1920 per measure
-we split this down to half, quarter, eighth, sixteenth, etc by adding 1 to an exponent of 2:
+we split this down to half, quarter, eighth, sixteenth, etc by incrementing an exponent of 2 by 1, starting from 0:
 1920/2^0 = 1920
 1920/2^1 = 960 (half)
 1920/2^2 = 480 (quarter)
@@ -10,7 +10,7 @@ we split this down to half, quarter, eighth, sixteenth, etc by adding 1 to an ex
 1920/2^7 = 15 (128th)
 
 
-We can do the same for 3 beat based measures by adding 1 to an expornent of 3:
+We can do the same for 3 beat based measures by adding 1 to an exponent of 3:
 1920/3^0 = 1920
 1920/3^1 = 640 (half)
 1920/3^2 = 320 (quarter)

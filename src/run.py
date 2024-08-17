@@ -17,8 +17,9 @@ for i in range(file_count):
   improv_config = ConfigImprov.ConfigImprov()
   print(DrumEzxJazz.DrumEzxJazz(improv_config.ticks_per_quarternote).json())
   #improv_config.track_configs = [DrumKrimh.DrumKrimh(improv_config.ticks_per_quarternote)]
+  improv_config.track_configs = [DrumSsdHugo.DrumSsdHugo(improv_config.ticks_per_quarternote)]
   #improv_config.track_configs = [DrumEzxJazz.DrumEzxJazz(improv_config.ticks_per_quarternote)]
-  improv_config.track_configs = [PianoOrnament.PianoOrnament(improv_config.ticks_per_quarternote)]
+  #improv_config.track_configs = [PianoOrnament.PianoOrnament(improv_config.ticks_per_quarternote)]
   #improv_config.track_configs = [PianoComp.PianoComp(improv_config.ticks_per_quarternote)]
   #improv_config.track_configs = [SynthPad.SynthPad(improv_config.ticks_per_quarternote)]
 
