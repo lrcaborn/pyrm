@@ -2,21 +2,21 @@ import lea
 
 class ConfigVolume:
   def __init__(self):
-    self.scope_change_chooser = lea.pmf({
+    self.change_chooser = lea.pmf({
       False: 0.75,
       True: 0.25
     })
-    self.change_chooser = lea.pmf({
+    self.scope_change_chooser = lea.pmf({
       False: 0.75,
       True: 0.25
     })
     self.scope_chooser = lea.pmf(
     {
-      0: 0.1,
-      1: 0.3,
-      2: 0.6,
-      3: 0,
-      4: 0,
+      0: 0,
+      1: 0.4,
+      2: 0.4,
+      3: 0.1,
+      4: 0.1,
       5: 0
     })
     self.scopes = (

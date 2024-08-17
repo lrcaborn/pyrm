@@ -1,8 +1,13 @@
-import PyRM.configs.NoteCategory
-import PyRM.configs.ConfigVolume
+import lea
+from PyRM.configs.ConfigNoteBase import ConfigNoteBase
+from PyRM.configs.ConfigVolume import ConfigVolume
+from PyRM.configs.MapDrumSlow import MapDrumSlow
+from PyRM.configs.NoteCategory import NoteCategory
 
-class ConfigNote:
-  def __init__(self):
+class ConfigNote(ConfigNoteBase):
+  def __init__(self, ticks_per_quarternote):
+    super().__init__(ticks_per_quarternote) 
+
     self.allow_simultaneous_from_same_category = False
     self.force_simultaneous_from_same_category = False
     
@@ -15,7 +20,7 @@ class ConfigNote:
       NoteCategory.TOM.value: [43, 47]
     }
     
-    self.count_scope = [600, 800]
+    self.count_scope = [400, 600]
 
     self.forbidden_notes = {37} # 37 is sidestick
 
@@ -70,15 +75,15 @@ class ConfigNote:
     })
 
     self.format_chooser = lea.pmf({
-      "All": 0.15,
+      "All": 0.2,
       "CrashSnare": 0,
       "CrashTom": 0, 
-      "HatSnare": 0.1,
-      "HatTom": 0.1,
-      "HatKickSnareTom": 0.2,
-      "HatRide": 0.15,
-      "RideSnare": 0.2,
-      "RideTom": 0.1
+      "HatSnare": 0.2,
+      "HatTom": 0.15,
+      "HatKickSnareTom": 0.25,
+      "HatRide": 0.05,
+      "RideSnare": 0.1,
+      "RideTom": 0.05
      })
     
     # this is only really useful for making sure that cymbals left ringing don't cut out prematurely
@@ -107,20 +112,20 @@ class ConfigPhrase:
   def __init__(self):
     self.count_scope = [5, 10]
     self.record_chance = lea.pmf({
-      False: 0.65,
-      True: 0.35
+      False: 0.25,
+      True: 0.75
     })
     self.replay_chance = lea.pmf({
-      False: 0.65,
-      True: 0.35
+      False: 0.75,
+      True: 0.25
     })
     
 class DrumVintage1963():
-  def __init__(self):
+  def __init__(self, ticks_per_quarternote):
     self.name = "Vintage1963"
     self.debug_log = False
 
-    self.note = ConfigNote()
+    self.note = ConfigNote(ticks_per_quarternote)
     
     self.phrase = ConfigPhrase()
 

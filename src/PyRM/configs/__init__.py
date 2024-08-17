@@ -9,6 +9,7 @@ from PyRM.configs import DrumBlues
 from PyRM.configs import DrumBully
 from PyRM.configs import DrumEzxJazz
 from PyRM.configs import DrumHell
+from PyRM.configs import DrumKrimh
 from PyRM.configs import DrumVintage1963
 from PyRM.configs import MapDrumFast
 from PyRM.configs import MapDrumSlow

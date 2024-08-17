@@ -12,25 +12,27 @@ class ConfigImprov:
     self.ticks_per_quarternote = 480
 
     self.tempo = PyRM.configs.ConfigTempo.ConfigTempo()
-    self.tempo.scope_change_chooser = lea.pmf({
-      False: 0.9,
-      True: 0.1
-    })
     self.tempo.change_chooser = lea.pmf({
       False: 0.5,
       True: 0.5
     })
+    self.tempo.scope_change_chooser = lea.pmf({
+      False: 0.75,
+      True: 0.25
+    })
     self.tempo.scope_chooser = lea.pmf(
     {
       0: 0,
-      1: 0.34,
-      2: 0.33,
-      3: 0.33,
-      4: 0
+      1: 0,
+      2: 0.25,
+      3: 0.5,
+      4: 0.25,
+      5: 0
     })
     self.tempo.scopes = (
       (50, 100),
-      (100, 150),
+      (100, 125),
+      (125, 150),
       (150, 200),
       (200, 250),
       (250, 300)

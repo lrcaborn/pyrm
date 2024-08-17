@@ -128,24 +128,24 @@ class Track:
         if isPrimaryNote:
             if self.format is None or self.config.note.format_change_chooser.random():
                 self.format = self.config.note.format_chooser.random()
-                print("1 Format changed to: " + str(self.format))
+                #print("1 Format changed to: " + str(self.format))
             category = self.config.note.formats[self.format].random()
-            print("CATEGORY: " + str(category))
-            print("self.config.note.categories: " + str(self.config.note.categories))
+            #print("CATEGORY: " + str(category))
+            #print("self.config.note.categories: " + str(self.config.note.categories))
             scopes = self.config.note.categories[category]
             pitch = get_random_from_list(scopes)
-            print("PITCH", 
-                                "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + 
-                                " from category: " + str(category) + 
-                                " with range: " + str(scopes))
+            #print("PITCH", 
+            #                    "HAVE CHOOSER - PRIMARY pitch: " + str(pitch) + 
+            #                    " from category: " + str(category) + 
+            #                    " with range: " + str(scopes))
         else:
             category = self.config.note.formats[self.format].random()
             scopes = self.config.note.categories[category]
             pitch = get_random_from_list(scopes)
-            print("PITCH", 
-                                "HAVE CHOOSER - NONPRIMARY pitch: " + str(pitch) + 
-                                " from category: " + str(category) + 
-                                " built from self.config.note.scope: " + str(scopes))
+            #print("PITCH", 
+            #                    "HAVE CHOOSER - NONPRIMARY pitch: " + str(pitch) + 
+            #                    " from category: " + str(category) + 
+            #                    " built from self.config.note.scope: " + str(scopes))
         #except AttributeError:
         #    pitch = get_random_from_list(self.config.note.scope)
         #    print("PITCH", 
@@ -157,7 +157,7 @@ class Track:
         return pitch
 
     def build_track(self):
-        print("self.config.note.format_change_chooser: " + str(self.config.note.format_change_chooser))
+        #print("self.config.note.format_change_chooser: " + str(self.config.note.format_change_chooser))
         channel = 0
         track_number = 0
 
@@ -167,10 +167,10 @@ class Track:
 
         if self.format is None or self.config.note.format_change_chooser.random():
             self.format = self.config.note.format_chooser.random()
-            print("2 Format changed to: " + str(self.format))
+            #print("2 Format changed to: " + str(self.format))
 
-        print("self.config.note.formats: " + str(self.config.note.formats))
-        print("self.config.note.formats[self.format]: " + str(self.config.note.formats[self.format]))
+        #print("self.config.note.formats: " + str(self.config.note.formats))
+        #print("self.config.note.formats[self.format]: " + str(self.config.note.formats[self.format]))
         self.categories = self.config.note.formats[self.format].random(self.note_count)
 
         #print("GENERAL", 
@@ -192,9 +192,9 @@ class Track:
         
         #print("TEMPO", "TRACK    NOTE_START_TIME    TEMPO")
         print("TEMPO", 
-                            str(track_number) + "    " + 
-                            str(self.note_start_time) + "    " + 
-                            str(self.tempos[self.note_start_time]))
+                str(track_number) + "    " + 
+                str(self.note_start_time) + "    " + 
+                str(self.tempos[self.note_start_time]))
 
         #print("PITCH", 
         #                    "category    pitch    note_start_time    note_length    volume")
@@ -231,10 +231,10 @@ class Track:
                 if tempo_change_chooser:
                     self.tempos[self.note_start_time] = get_random(tempo_scope)
                     #print("tempo changed: " + str(self.tempos[self.note_start_time]))
-                    #print("TEMPO", 
-                    #                    str(track_number) + "    " + 
-                    #                    str(self.note_start_time) + "    " + 
-                    #                    str(self.tempos[self.note_start_time]))
+                    print("TEMPO changed", 
+                            str(track_number) + "    " + 
+                            str(self.note_start_time) + "    " + 
+                            str(self.tempos[self.note_start_time]))
         
             #################
             # VOLUME CHANGE #
@@ -296,23 +296,33 @@ class Track:
             # to based on the number of format definitions in the current format.
             # So if we're working with a SnareRide format, that's only two possible
             # simultaneous notes that can be played, even if max_simultaneous is 3.
-            format_length = len(self.config.note.format_definitions[self.config.note.format_names.index(self.format)].keys())
-            max_simultaneous_count = self.config.note.format_names.index(self.format)
             
-            if (format_length < max_simultaneous_count):
-                max_simultaneous_count = format_length
+            #print("self.format: " + self.format)
+            #print("self.config.note.format_names.index(self.format): " + str(self.config.note.format_names.index(self.format)))
+            #print("len(self.config.note.format_definitions[self.config.note.format_names.index(self.format)]): " + str(len(self.config.note.format_definitions[self.config.note.format_names.index(self.format)])))
+            format_length = len(self.config.note.format_definitions[self.config.note.format_names.index(self.format)].keys())
+            #print(self.config.note.categories[self.config.note.format_names.index(self.format)])
+            #print(self.config.note.format_names.index(self.format))
+            #exit()
+            #print("format_length: " + str(format_length))
+            max_simultaneous_count = self.config.note.format_names.index(self.format)
+            print("format_lenth: " + str(format_length) + " max_simultaneous_count: " + str(max_simultaneous_count))
+            #print("max_simultaneous_count: " + str(max_simultaneous_count))
+                        
+#            if (format_length < max_simultaneous_count):
+#                max_simultaneous_count = format_length
 
             for j in range(max_simultaneous_count - 1):
-                #print("PITCH", "on " + str(j) + " of " 
-                #                 + str(self.config.note.max_simultaneous))
+                print("PITCH", "on " + str(j) + " of " 
+                                 + str(self.config.note.max_simultaneous))
                 
                 if self.config.note.simultaneous_chance.random() == True:
-                    #print("PITCH", "generating simultaneous note")
+                    print("PITCH", "generating simultaneous note")
                                     
                     # getting a pitch for a simultaneous note doesn't need to be limited by the category
                     pitch = self._generate_pitch(False)
                     '''
-                        same        allow     force     save
+                        same        allow   force   save
                         category	s_f_s_c s_f_s_c	note
                         0	        0	    0	    1
                         0	        0	    1	    0
@@ -332,18 +342,18 @@ class Track:
                             while (self.pitch_category_used_in_simultaneous(pitch, simultaneous_pitches)):
                                 # we don't want to add notes that are unpairable with the first note
                                 print("PITCH", 
-                                                "SIM NOTE failure: pitch " + str(pitch) + 
-                                                "'s category ( " + str(self.get_category_of_pitch(pitch)) + ") " +
-                                                " has already been used.")
+                                        "SIM NOTE failure: pitch " + str(pitch) + 
+                                        "'s category ( " + str(self.get_category_of_pitch(pitch)) + ") " +
+                                        " has already been used.")
                                 pitch = self._generate_pitch(False)
 
                     else:
                         if (self.config.note.force_simultaneous_from_same_category == True):
                             while not (self.pitch_category_used_in_simultaneous(pitch, simultaneous_pitches)):
                                 print("PITCH", 
-                                                "SIM NOTE failure: pitch " + str(pitch) + 
-                                                " is NOT in the current category and it needs to be " + 
-                                                str(self.get_category_of_pitch(pitch)))
+                                        "SIM NOTE failure: pitch " + str(pitch) + 
+                                        " is NOT in the current category and it needs to be " + 
+                                        str(self.get_category_of_pitch(pitch)))
                                 pitch = self._generate_pitch(False)
                             
                     simultaneous_pitches.append(pitch)
@@ -351,13 +361,12 @@ class Track:
                     self.add_note(self._create_note(note_length, pitch, volume))
 
                     print("PITCH", 
-                                        "SIM NOTE success: " + str(pitch) + 
-                                        " chosen: " 
-                                        + str(simultaneous_pitches))
-
+                            "SIM NOTE success: " + str(pitch) + 
+                            " chosen: " 
+                            + str(simultaneous_pitches))
 
                 else:
-                    #print("PITCH", "NOT generating simultaneous note")
+                    print("PITCH", "NOT generating simultaneous note")
                     break
 
             # index management and storage of recorded phrases
@@ -396,13 +405,13 @@ class Track:
 
     def pitch_category_used_in_simultaneous(self, pitch, simultaneous_pitches):
         sim_note_categories = [sim_category for sim_category, sim_category_notes in self.config.note.categories.items() if any(sim_category_note in simultaneous_pitches for sim_category_note in sim_category_notes)]
-        print(" SIM_NOTE_CATEGORIES: " + str(sim_note_categories))
+        #print(" SIM_NOTE_CATEGORIES: " + str(sim_note_categories))
         
         category_of_pitch = self.get_category_of_pitch(pitch)
-        print(" CATEGORY_OF_PITCH: " + str(category_of_pitch))
+        #print(" CATEGORY_OF_PITCH: " + str(category_of_pitch))
 
         category_used_in_simultaneous = set(category_of_pitch) <= set(sim_note_categories)
-        print(" CATEGORY_USED_IN_SIMULTANEOUS: " + str(category_used_in_simultaneous))
+        #print(" CATEGORY_USED_IN_SIMULTANEOUS: " + str(category_used_in_simultaneous))
     
         return category_used_in_simultaneous
 
@@ -547,8 +556,8 @@ class PyRM:
             track.build_track()
             #else:
             #    track.build_sequence()
-            print(track.config.name + ": ")
-            print(lea.vals(*track.categories))
+            #print(track.config.name + ": ")
+            #print(lea.vals(*track.categories))
         # find the longest track
         #max_note_start_time = max(self.tracks, key=attrgetter('note_start_time')).note_start_time        
 

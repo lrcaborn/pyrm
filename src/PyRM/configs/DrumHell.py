@@ -24,7 +24,7 @@ class ConfigNote(ConfigNoteBase):
 
         self.forbidden_notes = {37, 71} # 37 and 71 is sidestick
 
-        self.format_names = tuple(("All", "CrashSnare", "CrashTom", "HatSnare", "HatTom", "HatKickSnareTom", "HatRide", "SnareRide", "RideTom"))
+        self.format_names = tuple(("All", "CrashSnare", "CrashTom", "HatSnare", "HatTom", "HatKickSnareTom", "HatRide", "KickRideSnareTom", "SnareRide", "RideTom"))
 	
         self.format_definitions = [
                                     dict(zip(
@@ -56,6 +56,10 @@ class ConfigNote(ConfigNoteBase):
                                             tuple((0.5, 0.5))
                                     )),
                                     dict(zip(
+                                            tuple((NoteCategory.KICK.value, NoteCategory.RIDE.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
+                                            tuple((0.25, 0.25, 0.25, 0.25))
+                                    )),
+                                    dict(zip(
                                             tuple((NoteCategory.RIDE.value, NoteCategory.SNARE.value)), 
                                             tuple((0.5, 0.5))
                                     )),
@@ -76,12 +80,13 @@ class ConfigNote(ConfigNoteBase):
 
         self.format_chooser = lea.pmf({
             "All": 0.15,
-            "CrashSnare": 0.1,
-            "CrashTom": 0.1, 
+            "CrashSnare": 0,
+            "CrashTom": 0, 
             "HatSnare": 0.125,
             "HatTom": 0.1,
-            "HatKickSnareTom": 0.1,
+            "HatKickSnareTom": 0.15,
             "HatRide": 0.1,
+            "KickRideSnareTom": 0.15,
             "SnareRide": 0.125,
             "RideTom": 0.1
          })
@@ -97,8 +102,8 @@ class ConfigNote(ConfigNoteBase):
         self.max_simultaneous = 2
 
         self.simultaneous_chance = lea.pmf({
-            False: 0.25,
-            True: 0.75
+            False: 0.35,
+            True: 0.65
         })
 
 
@@ -106,8 +111,8 @@ class ConfigPhrase:
     def __init__(self):
         self.count_scope = [5, 20]
         self.record_chance = lea.pmf({
-            False: 0.9,
-            True: 0.1
+            False: 0.75,
+            True: 0.25
         })
         self.replay_chance = lea.pmf({
             False: 0.25,

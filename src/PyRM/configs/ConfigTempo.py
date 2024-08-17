@@ -8,16 +8,16 @@ class ConfigTempo:
       True: 0.5
     })
     self.change_chooser = lea.pmf({
-      False: 1,
-      True: 0
+      False: 0.5,
+      True: 0.5
     })
     self.scope_chooser = lea.pmf(
     {
       0: 0,
       1: 0.25,
-      2: 0.5,
+      2: 0.25,
       3: 0.25,
-      4: 0
+      4: 0.25
     })
     self.scopes = (
       (50, 100),
