@@ -10,7 +10,7 @@ class ConfigNote(ConfigNoteBase):
   def __init__(self, ticks_per_quarternote):
     super().__init__(ticks_per_quarternote) 
 
-    self.allow_simultaneous_from_same_category = True
+    self.allow_simultaneous_from_same_category = False
     self.force_simultaneous_from_same_category = False
 # unused
 # MIDI note/CC name map
@@ -26,6 +26,8 @@ class ConfigNote(ConfigNoteBase):
 # 49 Splash Choke
 # 32 China Choke
 # 39 Snare Rimclick
+# 37 Snare Sidestick
+#33 Snare Rimshot Edge
 # 19 Rack Tom 1 Rimclick
 # 17 Rack Tom 2 Rimclick
 # 14 Floor Tom 1 Rimclick
@@ -39,11 +41,11 @@ class ConfigNote(ConfigNoteBase):
       NoteCategory.HAT.value: [73,72,71,70,69,68,67,66,65,64,63,62,61,60,44,42,22],
       NoteCategory.KICK.value: [36,35],
       NoteCategory.RIDE.value: [59,53,52,51],
-      NoteCategory.SNARE.value: [40,38,37,34,33,21],
+      NoteCategory.SNARE.value: [40,38,34,21],
       NoteCategory.TOM.value: [48,47,45,43,41]
     }
 
-    self.count_scope = [100, 500]
+    self.count_scope = [50, 250]
 	
     # formats are used when NOT using sequences.
     # formats define the note groupings that MAY be played together.
@@ -65,19 +67,19 @@ class ConfigNote(ConfigNoteBase):
       )),
       dict(zip(
         tuple((NoteCategory.CRASH.value, NoteCategory.SNARE.value)), 
-        tuple((0.5, 0.5))
+        tuple((0.35, 0.65))
       )),
       dict(zip(
         tuple((NoteCategory.CRASH.value, NoteCategory.TOM.value)), 
-        tuple((0.5, 0.5))
+        tuple((0.4, 0.6))
       )),
       dict(zip(
         tuple((NoteCategory.HAT.value, NoteCategory.SNARE.value)), 
-        tuple((0.5, 0.5))
+        tuple((0.45, 0.55))
       )),
       dict(zip(
         tuple((NoteCategory.HAT.value, NoteCategory.TOM.value)), 
-        tuple((0.5, 0.5))
+        tuple((0.45, 0.55))
       )),
       dict(zip(
         tuple((NoteCategory.HAT.value, NoteCategory.KICK.value, NoteCategory.SNARE.value, NoteCategory.TOM.value)), 
@@ -93,11 +95,11 @@ class ConfigNote(ConfigNoteBase):
       )),
       dict(zip(
         tuple((NoteCategory.RIDE.value, NoteCategory.SNARE.value)), 
-        tuple((0.5, 0.5))
+        tuple((0.45, 0.55))
       )),
       dict(zip(
         tuple((NoteCategory.RIDE.value, NoteCategory.TOM.value)), 
-        tuple((0.5, 0.5))
+        tuple((0.45, 0.55))
       ))
     ]
 
@@ -163,11 +165,11 @@ class DrumSsdHugo():
     
     self.space = self.note.map.space
     self.space.chance = lea.pmf({
-      False: 0.975,
-      True: 0.025
+      False: 0.95,
+      True: 0.05
     })
     # seconds
-    self.space.scope = (0.25, 1.5)
+    self.space.scope = (0.25, 1.25)
 
     self.use_randomized_tuning = False
 

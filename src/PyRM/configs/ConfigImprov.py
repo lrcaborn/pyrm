@@ -17,16 +17,16 @@ class ConfigImprov:
       True: 0.5
     })
     self.tempo.scope_change_chooser = lea.pmf({
-      False: 0.75,
-      True: 0.25
+      False: 0.5,
+      True: 0.5
     })
     self.tempo.scope_chooser = lea.pmf(
     {
       0: 0,
-      1: 0,
-      2: 0.25,
-      3: 0.5,
-      4: 0.25,
+      1: 0.5,
+      2: 0.5,
+      3: 0,
+      4: 0,
       5: 0
     })
     self.tempo.scopes = (

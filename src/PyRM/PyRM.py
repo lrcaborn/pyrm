@@ -305,7 +305,7 @@ class Track:
             #print(self.config.note.format_names.index(self.format))
             #exit()
             #print("format_length: " + str(format_length))
-            max_simultaneous_count = self.config.note.format_names.index(self.format)
+            max_simultaneous_count = self.config.note.max_simultaneous
             print("format_lenth: " + str(format_length) + " max_simultaneous_count: " + str(max_simultaneous_count))
             #print("max_simultaneous_count: " + str(max_simultaneous_count))
                         
@@ -405,13 +405,13 @@ class Track:
 
     def pitch_category_used_in_simultaneous(self, pitch, simultaneous_pitches):
         sim_note_categories = [sim_category for sim_category, sim_category_notes in self.config.note.categories.items() if any(sim_category_note in simultaneous_pitches for sim_category_note in sim_category_notes)]
-        #print(" SIM_NOTE_CATEGORIES: " + str(sim_note_categories))
+        print(" SIM_NOTE_CATEGORIES: " + str(sim_note_categories))
         
         category_of_pitch = self.get_category_of_pitch(pitch)
-        #print(" CATEGORY_OF_PITCH: " + str(category_of_pitch))
+        print(" CATEGORY_OF_PITCH: " + str(category_of_pitch))
 
         category_used_in_simultaneous = set(category_of_pitch) <= set(sim_note_categories)
-        #print(" CATEGORY_USED_IN_SIMULTANEOUS: " + str(category_used_in_simultaneous))
+        print(" CATEGORY_USED_IN_SIMULTANEOUS: " + str(category_used_in_simultaneous))
     
         return category_used_in_simultaneous
 

@@ -166,8 +166,8 @@ class ConfigPhrase:
       True: 0.35
     })
     self.replay_chance = lea.pmf({
-      False: 0.65,
-      True: 0.35
+      False: 0.55,
+      True: 0.45
     })
 
 class DrumEzxJazz():
