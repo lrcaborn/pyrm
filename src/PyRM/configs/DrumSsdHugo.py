@@ -45,7 +45,7 @@ class ConfigNote(ConfigNoteBase):
       NoteCategory.TOM.value: [48,47,45,43,41]
     }
 
-    self.count_scope = [50, 250]
+    self.count_scope = [60, 75]
 	
     # formats are used when NOT using sequences.
     # formats define the note groupings that MAY be played together.
@@ -108,8 +108,8 @@ class ConfigNote(ConfigNoteBase):
     self.formats = dict(zip(self.format_names, self.format_probabilities))
 
     self.format_change_chooser = lea.pmf({
-      False: 0.5,
-      True: 0.5
+      False: 0.25,
+      True: 0.75
     })
 
     self.format_chooser = lea.pmf({
@@ -146,12 +146,12 @@ class ConfigPhrase:
   def __init__(self):
     self.count_scope = [5, 15]
     self.record_chance = lea.pmf({
-      False: 0.65,
-      True: 0.35
+      False: 0.75,
+      True: 0.25
     })
     self.replay_chance = lea.pmf({
-      False: 0.65,
-      True: 0.35
+      False: 0.75,
+      True: 0.25
     })
 
 class DrumSsdHugo():
@@ -165,11 +165,11 @@ class DrumSsdHugo():
     
     self.space = self.note.map.space
     self.space.chance = lea.pmf({
-      False: 0.95,
-      True: 0.05
+      False: 0.99,
+      True: 0.01
     })
     # seconds
-    self.space.scope = (0.25, 1.25)
+    self.space.scope = (0.01, 0.1)
 
     self.use_randomized_tuning = False
 

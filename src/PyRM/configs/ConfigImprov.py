@@ -13,18 +13,18 @@ class ConfigImprov:
 
     self.tempo = PyRM.configs.ConfigTempo.ConfigTempo()
     self.tempo.change_chooser = lea.pmf({
-      False: 0.5,
-      True: 0.5
+      False: 0.25,
+      True: 0.75
     })
     self.tempo.scope_change_chooser = lea.pmf({
-      False: 0.5,
-      True: 0.5
+      False: 0.25,
+      True: 0.75
     })
     self.tempo.scope_chooser = lea.pmf(
     {
-      0: 0,
+      0: 0.25,
       1: 0.5,
-      2: 0.5,
+      2: 0.25,
       3: 0,
       4: 0,
       5: 0
